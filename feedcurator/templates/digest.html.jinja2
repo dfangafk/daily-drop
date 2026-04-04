@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>feedcurator — {{ date }}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; background: #FFFFFF; margin: 0; padding: 0; color: #0F172A; }
+    .wrapper { max-width: 620px; margin: 0 auto; background: #FFFFFF; }
+    .header { border-bottom: 2px solid #E2E8F0; padding: 28px 32px 20px; text-align: center; }
+    .header h1 { margin: 0; font-size: 22px; letter-spacing: -0.3px; color: #0F172A; font-weight: 700; }
+    .header p { margin: 6px 0 0; font-size: 13px; color: #475569; letter-spacing: 0.3px; text-transform: uppercase; }
+    .body { padding: 24px 32px; }
+    .summary-box { background: #F8FAFC; border-left: 3px solid #2563EB; padding: 16px 20px; margin-bottom: 24px; border-radius: 2px; }
+    .summary-box .count { font-size: 12px; color: #475569; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.4px; }
+    .summary-box p { margin: 0; font-size: 15px; line-height: 1.5; color: #0F172A; }
+    .section-title { font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.6px; margin: 24px 0 12px; }
+    .item { border-bottom: 1px solid #E2E8F0; padding: 14px 0; }
+    .item:last-child { border-bottom: none; }
+    .item-header { display: table; width: 100%; margin-bottom: 6px; }
+    .item-meta { display: table-cell; font-size: 12px; color: #475569; }
+    .item-link { display: table-cell; text-align: right; font-size: 12px; white-space: nowrap; }
+    .item-link a { color: #2563EB; text-decoration: none; border-bottom: 1px solid #BFDBFE; }
+    .item-title { font-size: 15px; font-weight: 600; line-height: 1.4; margin: 0 0 6px; color: #0F172A; }
+    .item-title a { color: #0F172A; text-decoration: none; }
+    .item-title a:hover { color: #2563EB; }
+    .item-desc { font-size: 14px; line-height: 1.5; color: #475569; margin: 0 0 8px; }
+    .rationale { font-size: 13px; color: #1D4ED8; font-style: italic; margin: 6px 0 0; }
+    .pill { display: inline-block; background: #F1F5F9; color: #334155; font-size: 11px; padding: 2px 8px; border-radius: 10px; margin-right: 4px; border: 1px solid #E2E8F0; }
+    .footer { border-top: 1px solid #E2E8F0; padding: 20px 32px; font-size: 12px; color: #475569; text-align: center; line-height: 1.6; }
+    .footer a { color: #2563EB; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <!-- Header -->
+    <div class="header">
+      <h1>feedcurator</h1>
+      <p>Daily Digest &mdash; {{ date }}</p>
+    </div>
+
+    <div class="body">
+      <!-- Summary -->
+      <div class="summary-box">
+        <div class="count">{{ all_items | length }} new item{{ "s" if all_items | length != 1 else "" }} today</div>
+        <p>{{ summary if summary else "No summary available." }}</p>
+      </div>
+
+      <!-- Recommended picks -->
+      {% if picks %}
+      <div class="section-title">&#9733; Recommended for you</div>
+      {% for pick in picks %}
+      <div class="item">
+        <div class="item-header">
+          <span class="item-meta"><span class="pill">{{ pick.item.source_name }}</span></span>
+          <span class="item-link"><a href="{{ pick.item.url }}">Read &rarr;</a></span>
+        </div>
+        <p class="item-title"><a href="{{ pick.item.url }}">{{ pick.item.title }}</a></p>
+        {% if pick.item.description %}<p class="item-desc">{{ pick.item.description }}</p>{% endif %}
+        {% if pick.rationale %}<p class="rationale">&#8220;{{ pick.rationale }}&#8221;</p>{% endif %}
+      </div>
+      {% endfor %}
+      {% endif %}
+
+      <!-- All new items -->
+      {% if all_items %}
+      <div class="section-title">All new items today</div>
+      {% for item in all_items %}
+      <div class="item">
+        <div class="item-header">
+          <span class="item-meta"><span class="pill">{{ item.source_name }}</span>{% if item.published_at_display %} &nbsp;{{ item.published_at_display }}{% endif %}</span>
+          <span class="item-link"><a href="{{ item.url }}">Read &rarr;</a></span>
+        </div>
+        <p class="item-title"><a href="{{ item.url }}">{{ item.title }}</a></p>
+      </div>
+      {% endfor %}
+      {% endif %}
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>feedcurator &mdash; your daily content digest<br>
+      <a href="{{ archive_url }}">View full archive</a></p>
+    </div>
+  </div>
+</body>
+</html>

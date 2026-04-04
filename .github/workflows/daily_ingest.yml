@@ -1,0 +1,98 @@
+name: Daily Feed Digest
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 12 * * *"  # 7:00 AM EST / 8:00 AM EDT
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Run tests
+        run: uv run pytest
+
+  ingest:
+    needs: test
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy-pages.outputs.page_url }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Restore seen.json cache
+        uses: actions/cache@v4
+        with:
+          path: data/seen.json
+          key: seen-json-${{ runner.os }}
+          restore-keys: seen-json-
+
+      - name: Run pipeline
+        run: uv run python -m feedcurator.pipeline
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SENDER_GMAIL: ${{ secrets.SENDER_GMAIL }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          RECEIVER_EMAIL: ${{ secrets.RECEIVER_EMAIL }}
+
+      - name: Save seen.json cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: data/seen.json
+          key: seen-json-${{ runner.os }}
+
+      - name: Commit logs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/logs/
+          if git diff --cached --quiet; then
+            echo "No new logs to commit"
+          else
+            git commit -m "data: daily digest logs $(date -u +%Y-%m-%d)"
+            git push
+          fi
+
+      - name: Upload archive to GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/
+
+      - name: Deploy to GitHub Pages
+        id: deploy-pages
+        uses: actions/deploy-pages@v4
