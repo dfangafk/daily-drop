@@ -1,15 +1,15 @@
-"""Tests for feedcurator.config — settings loading and env var overrides."""
+"""Tests for dailydrop.config — settings loading and env var overrides."""
 
 import pytest
 
-import feedcurator.config as cfg
-from feedcurator.config import Settings
+import dailydrop.config as cfg
+from dailydrop.config import Settings
 
 
 def test_settings_fetch_defaults():
     s = Settings()
     assert s.fetch.timeout == 30
-    assert "feedcurator" in s.fetch.user_agent
+    assert "dailydrop" in s.fetch.user_agent
 
 
 def test_settings_notify_defaults():

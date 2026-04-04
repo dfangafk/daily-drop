@@ -1,12 +1,12 @@
-"""Tests for feedcurator.archive — context building, rendering, writing."""
+"""Tests for dailydrop.archive — context building, rendering, writing."""
 
 import datetime
 from pathlib import Path
 
 import pytest
 
-from feedcurator.archive import build_archive_context, render_archive, write_archive
-from feedcurator.models import RankResult
+from dailydrop.archive import build_archive_context, render_archive, write_archive
+from dailydrop.models import RankResult
 
 
 def test_build_archive_context_structure(sample_items):
@@ -42,7 +42,7 @@ def test_render_archive_returns_html_string(sample_items):
 
     assert isinstance(html, str)
     assert "<!DOCTYPE html>" in html
-    assert "feedcurator" in html
+    assert "dailydrop" in html
 
 
 def test_render_archive_contains_item_titles(sample_items):

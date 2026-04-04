@@ -1,16 +1,16 @@
-"""Shared fixtures for feedcurator tests."""
+"""Shared fixtures for dailydrop tests."""
 
 import datetime
 
 import pytest
 
-from feedcurator.models import Item
+from dailydrop.models import Item
 
 
 @pytest.fixture(autouse=True)
 def no_file_logging(mocker):
     """Prevent pipeline tests from writing real log files to disk."""
-    mocker.patch("feedcurator.pipeline._add_file_handler")
+    mocker.patch("dailydrop.pipeline._add_file_handler")
 
 
 @pytest.fixture

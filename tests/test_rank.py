@@ -1,12 +1,12 @@
-"""Tests for feedcurator.rank — LLM-based item ranking."""
+"""Tests for dailydrop.rank — LLM-based item ranking."""
 
 import json
 from pathlib import Path
 
 import pytest
 
-from feedcurator.models import RankResult
-from feedcurator.rank import load_interests, rank_items
+from dailydrop.models import RankResult
+from dailydrop.rank import load_interests, rank_items
 
 _VALID_RESPONSE = json.dumps({
     "summary": "Great AI content today.",
@@ -77,7 +77,7 @@ def test_load_interests_strips_whitespace(tmp_path):
 
 
 def test_rank_items_uses_default_interests_path(mocker, sample_items):
-    mocker.patch("feedcurator.rank.load_interests", return_value="AI")
+    mocker.patch("dailydrop.rank.load_interests", return_value="AI")
     complete = lambda _: _VALID_RESPONSE
     result = rank_items(sample_items, complete)
     assert isinstance(result, RankResult)

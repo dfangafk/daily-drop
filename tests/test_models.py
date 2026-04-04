@@ -1,10 +1,10 @@
-"""Tests for feedcurator.models — Item and RankResult construction."""
+"""Tests for dailydrop.models — Item and RankResult construction."""
 
 import datetime
 
 import pytest
 
-from feedcurator.models import Item, RankResult
+from dailydrop.models import Item, RankResult
 
 
 def test_item_construction():

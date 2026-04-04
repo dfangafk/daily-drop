@@ -1,4 +1,4 @@
-"""Tests for feedcurator.fetch — source loading, feed fetching, entry parsing."""
+"""Tests for dailydrop.fetch — source loading, feed fetching, entry parsing."""
 
 import datetime
 from pathlib import Path
@@ -6,8 +6,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from feedcurator.fetch import _parse_entry, fetch_all_sources, fetch_feed, load_sources
-from feedcurator.models import Item
+from dailydrop.fetch import _parse_entry, fetch_all_sources, fetch_feed, load_sources
+from dailydrop.models import Item
 
 _MINIMAL_SOURCES_YAML = """\
 sources:
@@ -52,7 +52,7 @@ def test_fetch_feed_returns_items(mocker):
     mock_feed.entries = [mock_entry]
     mock_feed.bozo = False
 
-    mocker.patch("feedcurator.fetch.feedparser.parse", return_value=mock_feed)
+    mocker.patch("dailydrop.fetch.feedparser.parse", return_value=mock_feed)
 
     source = {"name": "Test Feed", "type": "rss", "url": "https://example.com/feed.xml", "category": "tech"}
     items = fetch_feed(source)
@@ -62,7 +62,7 @@ def test_fetch_feed_returns_items(mocker):
 
 
 def test_fetch_feed_returns_empty_on_error(mocker):
-    mocker.patch("feedcurator.fetch.feedparser.parse", side_effect=Exception("network error"))
+    mocker.patch("dailydrop.fetch.feedparser.parse", side_effect=Exception("network error"))
     source = {"name": "Broken Feed", "type": "rss", "url": "https://bad.example.com/", "category": "tech"}
     items = fetch_feed(source)
     assert items == []
@@ -113,12 +113,12 @@ def test_parse_entry_published_at_is_none_when_no_date():
 
 
 def test_fetch_all_sources_combines_feeds(mocker, sample_items):
-    mocker.patch("feedcurator.fetch.load_sources", return_value=[
+    mocker.patch("dailydrop.fetch.load_sources", return_value=[
         {"name": "A", "type": "rss", "url": "https://a.example.com/", "category": "tech"},
         {"name": "B", "type": "rss", "url": "https://b.example.com/", "category": "blog"},
     ])
     mocker.patch(
-        "feedcurator.fetch.fetch_feed",
+        "dailydrop.fetch.fetch_feed",
         side_effect=[sample_items[:2], sample_items[2:]],
     )
 
@@ -129,10 +129,10 @@ def test_fetch_all_sources_combines_feeds(mocker, sample_items):
 
 def test_fetch_all_sources_sorted_newest_first(mocker, sample_items):
     # sample_items are already sorted oldest→newest; fetch_all_sources should reverse
-    mocker.patch("feedcurator.fetch.load_sources", return_value=[
+    mocker.patch("dailydrop.fetch.load_sources", return_value=[
         {"name": "Feed", "type": "rss", "url": "https://feed.example.com/", "category": "tech"},
     ])
-    mocker.patch("feedcurator.fetch.fetch_feed", return_value=sample_items)
+    mocker.patch("dailydrop.fetch.fetch_feed", return_value=sample_items)
 
     items = fetch_all_sources()
 

@@ -1,20 +1,20 @@
-"""Tests for feedcurator.notify — email building and SMTP sending."""
+"""Tests for dailydrop.notify — email building and SMTP sending."""
 
 import datetime
 import smtplib
 
 import pytest
 
-import feedcurator.notify as notify_module
-from feedcurator.models import RankResult
-from feedcurator.notify import build_template_context, send_notification
+import dailydrop.notify as notify_module
+from dailydrop.models import RankResult
+from dailydrop.notify import build_template_context, send_notification
 
 
 def test_send_notification_skips_when_no_credentials(mocker, sample_items):
     mocker.patch.object(notify_module.settings, "sender_gmail", "")
     mocker.patch.object(notify_module.settings, "gmail_app_password", "")
     mocker.patch.object(notify_module.settings, "receiver_email", "")
-    mock_smtp = mocker.patch("feedcurator.notify.smtplib.SMTP_SSL")
+    mock_smtp = mocker.patch("dailydrop.notify.smtplib.SMTP_SSL")
 
     t0 = datetime.datetime(2026, 4, 1, 12, 0, tzinfo=datetime.UTC)
     send_notification(t0, sample_items, None)
@@ -27,12 +27,12 @@ def test_send_notification_calls_smtp(mocker, sample_items):
     mocker.patch.object(notify_module.settings, "gmail_app_password", "app-pass")
     mocker.patch.object(notify_module.settings, "receiver_email", "recv@example.com")
     mock_smtp_instance = mocker.MagicMock()
-    mocker.patch("feedcurator.notify.smtplib.SMTP_SSL", return_value=mock_smtp_instance)
+    mocker.patch("dailydrop.notify.smtplib.SMTP_SSL", return_value=mock_smtp_instance)
     mock_smtp_instance.__enter__ = mocker.Mock(return_value=mock_smtp_instance)
     mock_smtp_instance.__exit__ = mocker.Mock(return_value=False)
-    mocker.patch("feedcurator.notify.render_text", return_value="plain text")
-    mocker.patch("feedcurator.notify.render_html", return_value="<html></html>")
-    mocker.patch("feedcurator.notify.build_template_context", return_value={})
+    mocker.patch("dailydrop.notify.render_text", return_value="plain text")
+    mocker.patch("dailydrop.notify.render_html", return_value="<html></html>")
+    mocker.patch("dailydrop.notify.build_template_context", return_value={})
 
     t0 = datetime.datetime(2026, 4, 1, 12, 0, tzinfo=datetime.UTC)
     send_notification(t0, sample_items, None)
@@ -46,11 +46,11 @@ def test_send_notification_subject_contains_date_and_count(mocker, sample_items)
     mocker.patch.object(notify_module.settings, "gmail_app_password", "app-pass")
     mocker.patch.object(notify_module.settings, "receiver_email", "recv@example.com")
     mock_smtp_instance = mocker.MagicMock()
-    mocker.patch("feedcurator.notify.smtplib.SMTP_SSL", return_value=mock_smtp_instance)
+    mocker.patch("dailydrop.notify.smtplib.SMTP_SSL", return_value=mock_smtp_instance)
     mock_smtp_instance.__enter__ = mocker.Mock(return_value=mock_smtp_instance)
     mock_smtp_instance.__exit__ = mocker.Mock(return_value=False)
-    mocker.patch("feedcurator.notify.render_text", return_value="plain")
-    mocker.patch("feedcurator.notify.render_html", return_value="<html></html>")
+    mocker.patch("dailydrop.notify.render_text", return_value="plain")
+    mocker.patch("dailydrop.notify.render_html", return_value="<html></html>")
 
     t0 = datetime.datetime(2026, 4, 1, 12, 0, tzinfo=datetime.UTC)
     send_notification(t0, sample_items, None)
@@ -83,10 +83,10 @@ def test_build_template_context_with_rank_result(sample_items):
 
 
 def test_rendered_text_contains_urls(mocker, sample_items):
-    mocker.patch("feedcurator.notify.settings.paths.templates_dir", __import__("pathlib").Path(
-        __import__("feedcurator.config", fromlist=["BASE_DIR"]).BASE_DIR
-    ) / "feedcurator" / "templates")
+    mocker.patch("dailydrop.notify.settings.paths.templates_dir", __import__("pathlib").Path(
+        __import__("dailydrop.config", fromlist=["BASE_DIR"]).BASE_DIR
+    ) / "dailydrop" / "templates")
     ctx = build_template_context("2026-04-01", sample_items, None)
-    from feedcurator.notify import render_text
+    from dailydrop.notify import render_text
     text = render_text(ctx)
     assert "https://example.com/a" in text

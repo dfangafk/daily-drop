@@ -1,4 +1,4 @@
-# feedcurator
+# dailydrop
 
 Daily content curation pipeline: fetch RSS feeds → LLM picks top items matching your interests → email digest + static archive.
 
@@ -63,7 +63,7 @@ startups and product thinking
 ## Run locally
 
 ```bash
-uv run python -m feedcurator.pipeline
+uv run python -m dailydrop.pipeline
 ```
 
 ## Run tests

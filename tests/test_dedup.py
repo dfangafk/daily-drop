@@ -1,11 +1,11 @@
-"""Tests for feedcurator.dedup — load/save/filter seen-item journal."""
+"""Tests for dailydrop.dedup — load/save/filter seen-item journal."""
 
 import json
 from pathlib import Path
 
 import pytest
 
-from feedcurator.dedup import filter_new, load_seen, save_seen
+from dailydrop.dedup import filter_new, load_seen, save_seen
 
 
 def test_load_seen_returns_empty_set_when_no_file(tmp_path):

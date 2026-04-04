@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>dailydrop archive — {{ run_date }}</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; background: #F8FAFC; margin: 0; padding: 0; color: #0F172A; }
+    .page { max-width: 860px; margin: 0 auto; padding: 40px 24px 80px; }
+    header { margin-bottom: 36px; }
+    header h1 { margin: 0 0 4px; font-size: 26px; font-weight: 700; letter-spacing: -0.4px; }
+    header p { margin: 0; font-size: 13px; color: #64748B; }
+    .section-title { font-size: 11px; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.7px; margin: 32px 0 12px; border-bottom: 1px solid #E2E8F0; padding-bottom: 8px; }
+    .picks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-bottom: 32px; }
+    .pick-card { background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px; padding: 18px 20px; }
+    .pick-card .source { font-size: 11px; color: #64748B; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px; }
+    .pick-card h3 { margin: 0 0 8px; font-size: 15px; font-weight: 600; line-height: 1.4; }
+    .pick-card h3 a { color: #0F172A; text-decoration: none; }
+    .pick-card h3 a:hover { color: #2563EB; }
+    .pick-card .rationale { font-size: 13px; color: #1D4ED8; font-style: italic; margin: 0; line-height: 1.5; }
+    table { width: 100%; border-collapse: collapse; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px; overflow: hidden; font-size: 14px; }
+    th { text-align: left; font-size: 11px; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.4px; padding: 10px 14px; background: #F8FAFC; border-bottom: 1px solid #E2E8F0; }
+    td { padding: 11px 14px; border-bottom: 1px solid #F1F5F9; vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    td a { color: #2563EB; text-decoration: none; }
+    td a:hover { text-decoration: underline; }
+    .tag { display: inline-block; background: #F1F5F9; color: #475569; font-size: 11px; padding: 2px 8px; border-radius: 10px; border: 1px solid #E2E8F0; }
+    footer { margin-top: 48px; font-size: 12px; color: #94A3B8; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>dailydrop</h1>
+      <p>Archive for {{ run_date }} &mdash; {{ all_items | length }} new item{{ "s" if all_items | length != 1 else "" }}</p>
+    </header>
+
+    {% if picks %}
+    <div class="section-title">&#9733; Recommended picks</div>
+    {% if summary %}<p style="font-size:15px; line-height:1.6; color:#334155; margin:0 0 20px;">{{ summary }}</p>{% endif %}
+    <div class="picks-grid">
+      {% for pick in picks %}
+      <div class="pick-card">
+        <div class="source">{{ pick.item.source_name }}</div>
+        <h3><a href="{{ pick.item.url }}" target="_blank" rel="noopener">{{ pick.item.title }}</a></h3>
+        {% if pick.rationale %}<p class="rationale">{{ pick.rationale }}</p>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="section-title">All new items</div>
+    {% if all_items %}
+    <table>
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Source</th>
+          <th>Published</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in all_items %}
+        <tr>
+          <td><a href="{{ item.url }}" target="_blank" rel="noopener">{{ item.title }}</a></td>
+          <td><span class="tag">{{ item.source_name }}</span></td>
+          <td style="white-space:nowrap; color:#64748B; font-size:13px;">{{ item.published_at_display or "" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p style="color:#64748B;">No new items today.</p>
+    {% endif %}
+
+    <footer>
+      <p>Generated {{ generated_at }} UTC &mdash; dailydrop</p>
+    </footer>
+  </div>
+</body>
+</html>

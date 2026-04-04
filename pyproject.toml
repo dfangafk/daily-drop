@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "feedcurator"
+name = "dailydrop"
 version = "0.1.0"
 description = "Daily content curation pipeline: RSS feeds → LLM ranking → email digest + static archive"
 readme = "README.md"
@@ -24,7 +24,7 @@ dependencies = [
 ]
 
 [project.scripts]
-feedcurator = "feedcurator.pipeline:main"
+dailydrop = "dailydrop.pipeline:main"
 
 [dependency-groups]
 dev = [
@@ -36,7 +36,7 @@ dev = [
 testpaths = ["tests"]
 
 [tool.hatch.build.targets.wheel]
-packages = ["feedcurator"]
+packages = ["dailydrop"]
 
 [tool.uv]
 package = true

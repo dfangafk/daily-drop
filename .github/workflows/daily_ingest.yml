@@ -60,7 +60,7 @@ jobs:
           restore-keys: seen-json-
 
       - name: Run pipeline
-        run: uv run python -m feedcurator.pipeline
+        run: uv run python -m dailydrop.pipeline
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
