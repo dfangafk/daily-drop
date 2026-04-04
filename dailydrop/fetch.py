@@ -1,6 +1,5 @@
 """Fetch new items from all configured RSS sources."""
 
-import datetime
 import logging
 from pathlib import Path
 
@@ -24,7 +23,10 @@ def load_sources(path: Path | None = None) -> list[dict]:
         List of raw source dicts, each with ``name``, ``type``, ``url``,
         and ``category`` keys.
     """
-    ...
+    resolved = path or settings.paths.sources_yaml
+    with open(resolved) as f:
+        data = yaml.safe_load(f)
+    return data.get("sources", [])
 
 
 def fetch_feed(source: dict) -> list[Item]:
@@ -67,14 +69,5 @@ def _parse_entry(entry: feedparser.FeedParserDict, source: dict) -> Item:
 
     Returns:
         A populated ``Item`` dataclass.
-    """
-    ...
-
-
-def _parse_timestamp(entry: feedparser.FeedParserDict) -> datetime.datetime | None:
-    """Extract and convert a feedparser time struct to a UTC-aware datetime.
-
-    Tries ``published_parsed`` first, then ``updated_parsed``.  Returns
-    ``None`` if neither is present or parseable.
     """
     ...
