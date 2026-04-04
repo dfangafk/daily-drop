@@ -1,5 +1,6 @@
 """Fetch new items from all configured RSS sources."""
 
+import datetime
 import logging
 from pathlib import Path
 
@@ -40,7 +41,15 @@ def fetch_feed(source: dict) -> list[Item]:
     Returns:
         List of ``Item`` objects parsed from the feed.
     """
-    ...
+    url = source.get("url", "")
+    try:
+        feed = feedparser.parse(url)
+        if feed.bozo and not feed.entries:
+            raise feed.bozo_exception
+        return [_parse_entry(entry, source) for entry in feed.entries]
+    except Exception as exc:
+        logger.warning("Failed to fetch feed %r (%s): %s", source.get("name"), url, exc)
+        return []
 
 
 def fetch_all_sources(sources: list[dict] | None = None) -> list[Item]:
@@ -70,4 +79,13 @@ def _parse_entry(entry: feedparser.FeedParserDict, source: dict) -> Item:
     Returns:
         A populated ``Item`` dataclass.
     """
-    ...
+    ts = entry.get("published_parsed")
+    return Item(
+        id=entry.get("id", ""),
+        source_type=source.get("type", "rss"),
+        source_name=source.get("name", ""),
+        title=entry.get("title", ""),
+        url=entry.get("link", ""),
+        published_at=datetime.datetime(*ts[:6], tzinfo=datetime.timezone.utc) if ts else None,
+        description=entry.get("summary", ""),
+    )
