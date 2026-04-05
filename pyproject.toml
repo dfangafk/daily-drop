@@ -39,3 +39,12 @@ packages = ["dailydrop"]
 
 [tool.uv]
 package = true
+
+[tool.ruff]
+line-length = 79
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "N", "UP"]
+
+[tool.ruff.format]
+docstring-code-line-length = 72

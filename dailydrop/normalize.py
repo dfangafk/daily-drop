@@ -49,7 +49,8 @@ def _normalize_published_at(
 
 
 def normalize_items(items: list[Item]) -> list[Item]:
-    """Normalize items in-place: clean descriptions and convert timestamps to configured timezone.
+    """Normalize items in-place: clean descriptions and convert timestamps to
+    configured timezone.
 
     Args:
         items: Items to normalize.

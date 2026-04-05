@@ -28,5 +28,3 @@ def test_item_none_published_at():
         published_at=None,
     )
     assert item.published_at is None
-
-

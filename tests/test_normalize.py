@@ -2,11 +2,12 @@
 
 import datetime
 
-import pytest
-
 from dailydrop.models import Item
-from dailydrop.normalize import _normalize_description, _normalize_published_at, normalize_items
-
+from dailydrop.normalize import (
+    _normalize_description,
+    _normalize_published_at,
+    normalize_items,
+)
 
 # ---------------------------------------------------------------------------
 # _normalize_description
@@ -18,11 +19,16 @@ def test_normalize_description_strips_html():
 
 
 def test_normalize_description_unescapes_entities():
-    assert _normalize_description("AT&amp;T &mdash; &lt;tech&gt;") == "AT&T — <tech>"
+    assert (
+        _normalize_description("AT&amp;T &mdash; &lt;tech&gt;")
+        == "AT&T — <tech>"
+    )
 
 
 def test_normalize_description_collapses_whitespace():
-    assert _normalize_description("  too   many   spaces  ") == "too many spaces"
+    assert (
+        _normalize_description("  too   many   spaces  ") == "too many spaces"
+    )
 
 
 def test_normalize_description_truncates_at_word_boundary():
@@ -51,16 +57,20 @@ def test_normalize_published_at_none_returns_none():
 
 
 def test_normalize_published_at_converts_timezone(mocker):
-    mocker.patch("dailydrop.normalize.settings.notify.timezone", "America/New_York")
-    utc_dt = datetime.datetime(2026, 4, 5, 12, 0, tzinfo=datetime.timezone.utc)
+    mocker.patch(
+        "dailydrop.normalize.settings.notify.timezone", "America/New_York"
+    )
+    utc_dt = datetime.datetime(2026, 4, 5, 12, 0, tzinfo=datetime.UTC)
     result = _normalize_published_at(utc_dt)
     assert result.tzname() == "EDT"
     assert result.hour == 8  # UTC-4 during EDT
 
 
 def test_normalize_published_at_preserves_instant(mocker):
-    mocker.patch("dailydrop.normalize.settings.notify.timezone", "America/Los_Angeles")
-    utc_dt = datetime.datetime(2026, 4, 5, 12, 0, tzinfo=datetime.timezone.utc)
+    mocker.patch(
+        "dailydrop.normalize.settings.notify.timezone", "America/Los_Angeles"
+    )
+    utc_dt = datetime.datetime(2026, 4, 5, 12, 0, tzinfo=datetime.UTC)
     result = _normalize_published_at(utc_dt)
     assert result.utctimetuple()[:6] == utc_dt.utctimetuple()[:6]
 
@@ -85,7 +95,9 @@ def test_normalize_items_cleans_descriptions(mocker, sample_items):
 
 
 def test_normalize_items_converts_published_at(mocker, sample_items):
-    mocker.patch("dailydrop.normalize.settings.notify.timezone", "America/New_York")
+    mocker.patch(
+        "dailydrop.normalize.settings.notify.timezone", "America/New_York"
+    )
     normalize_items(sample_items)
     for item in sample_items:
         if item.published_at is not None:
@@ -95,8 +107,11 @@ def test_normalize_items_converts_published_at(mocker, sample_items):
 def test_normalize_items_handles_none_published_at(mocker):
     mocker.patch("dailydrop.normalize.settings.notify.timezone", "UTC")
     item = Item(
-        id="x", title="X", url="https://example.com/x",
-        published_at=None, description="<b>bold</b>",
+        id="x",
+        title="X",
+        url="https://example.com/x",
+        published_at=None,
+        description="<b>bold</b>",
     )
     normalize_items([item])
     assert item.published_at is None

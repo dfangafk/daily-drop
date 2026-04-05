@@ -21,7 +21,7 @@ def _load_sources(path: Path | None = None) -> list[dict]:
             ``settings.paths.sources_yaml``.
 
     Returns:
-        List of raw source dicts, each with ``name``, ``type``, and ``url`` keys.
+        List of raw source dicts, each with ``name`` and ``url`` keys.
     """
     resolved = path or settings.paths.sources_yaml
     with open(resolved) as f:
@@ -51,7 +51,9 @@ def _fetch_feed(url: str) -> list[Item]:
                 id=entry.get("id") or entry.get("link", ""),
                 title=entry.get("title", ""),
                 url=entry.get("link", ""),
-                published_at=datetime.datetime(*ts[:6], tzinfo=datetime.timezone.utc)
+                published_at=datetime.datetime(
+                    *ts[:6], tzinfo=datetime.UTC
+                )
                 if (ts := entry.get("published_parsed"))
                 else None,
                 description=entry.get("summary", ""),
@@ -84,7 +86,8 @@ def fetch_all_sources(urls: list[str] | None = None) -> list[Item]:
     """Fetch all configured sources and return the combined item list.
 
     Args:
-        urls: Override list of feed URLs.  Defaults to URLs from ``load_sources()``.
+        urls: Override list of feed URLs.  Defaults to URLs
+            from ``load_sources()``.
 
     Returns:
         Flat list of ``Item`` objects from all sources, sorted by
@@ -96,7 +99,13 @@ def fetch_all_sources(urls: list[str] | None = None) -> list[Item]:
     items = []
     for url in urls:
         items.extend(_fetch_feed(url))
-    items.sort(key=lambda item: item.published_at or datetime.datetime.min.replace(tzinfo=datetime.timezone.utc), reverse=True)
+    items.sort(
+        key=lambda item: (
+            item.published_at
+            or datetime.datetime.min.replace(tzinfo=datetime.UTC)
+        ),
+        reverse=True,
+    )
     return items
 
 
@@ -112,13 +121,18 @@ def filter_recent_items(
     Args:
         items: List of ``Item`` objects to filter.
         hours: Lookback window in hours.  Defaults to 24.
-        reference_time: Reference time for the cutoff.  Defaults to the current UTC time.
+        reference_time: Reference time for the cutoff.
+            Defaults to the current UTC time.
 
     Returns:
         Filtered list of ``Item`` objects.
     """
     if reference_time is None:
-        reference_time =datetime.datetime.now(tz=datetime.timezone.utc)
+        reference_time = datetime.datetime.now(tz=datetime.UTC)
     cutoff = reference_time - datetime.timedelta(hours=hours)
-    recent_items = [item for item in items if item.published_at and cutoff <= item.published_at <= reference_time]
+    recent_items = [
+        item
+        for item in items
+        if item.published_at and cutoff <= item.published_at <= reference_time
+    ]
     return recent_items

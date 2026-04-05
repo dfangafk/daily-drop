@@ -17,7 +17,9 @@ def sample_items() -> list[Item]:
             source_name="Test Blog",
             title="Article A",
             url="https://example.com/a",
-            published_at=datetime.datetime(2026, 4, 1, 10, 0, tzinfo=datetime.UTC),
+            published_at=datetime.datetime(
+                2026, 4, 1, 10, 0, tzinfo=datetime.UTC
+            ),
             description="First article about AI.",
         ),
         Item(
@@ -26,7 +28,9 @@ def sample_items() -> list[Item]:
             source_name="Test Blog",
             title="Article B",
             url="https://example.com/b",
-            published_at=datetime.datetime(2026, 4, 1, 11, 0, tzinfo=datetime.UTC),
+            published_at=datetime.datetime(
+                2026, 4, 1, 11, 0, tzinfo=datetime.UTC
+            ),
             description="Second article about startups.",
         ),
         Item(
@@ -35,7 +39,9 @@ def sample_items() -> list[Item]:
             source_name="Other Feed",
             title="Article C",
             url="https://example.com/c",
-            published_at=datetime.datetime(2026, 4, 1, 12, 0, tzinfo=datetime.UTC),
+            published_at=datetime.datetime(
+                2026, 4, 1, 12, 0, tzinfo=datetime.UTC
+            ),
             description="Third article about economics.",
         ),
     ]

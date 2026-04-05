@@ -12,37 +12,38 @@ BASE_DIR = Path(__file__).resolve().parent.parent  # repo root
 
 # --- SMTP provider registry ---
 
-# (host, port, smtp_security) — smtp_security="ssl" means SMTP_SSL; "starttls" means SMTP + STARTTLS
+# (host, port, smtp_security)
+# "ssl" means SMTP_SSL; "starttls" means SMTP + STARTTLS
 SMTP_PROVIDERS: dict[str, tuple[str, int, str]] = {
-    "gmail":    ("smtp.gmail.com",          465, "ssl"),
-    "outlook":  ("smtp-mail.outlook.com",   587, "starttls"),
-    "yahoo":    ("smtp.mail.yahoo.com",     465, "ssl"),
-    "icloud":   ("smtp.mail.me.com",        587, "starttls"),
-    "fastmail": ("smtp.fastmail.com",       465, "ssl"),
+    "gmail": ("smtp.gmail.com", 465, "ssl"),
+    "outlook": ("smtp-mail.outlook.com", 587, "starttls"),
+    "yahoo": ("smtp.mail.yahoo.com", 465, "ssl"),
+    "icloud": ("smtp.mail.me.com", 587, "starttls"),
+    "fastmail": ("smtp.fastmail.com", 465, "ssl"),
 }
 
 PORT_TO_SECURITY: dict[int, str] = {
-    25:   "starttls",
-    465:  "ssl",
-    587:  "starttls",
+    25: "starttls",
+    465: "ssl",
+    587: "starttls",
     2525: "starttls",
 }
 
 DOMAIN_TO_PROVIDER: dict[str, str] = {
-    "gmail.com":      "gmail",
+    "gmail.com": "gmail",
     "googlemail.com": "gmail",
-    "outlook.com":    "outlook",
-    "hotmail.com":    "outlook",
-    "live.com":       "outlook",
-    "msn.com":        "outlook",
-    "yahoo.com":      "yahoo",
-    "yahoo.co.uk":    "yahoo",
-    "ymail.com":      "yahoo",
-    "icloud.com":     "icloud",
-    "me.com":         "icloud",
-    "mac.com":        "icloud",
-    "fastmail.com":   "fastmail",
-    "fastmail.fm":    "fastmail",
+    "outlook.com": "outlook",
+    "hotmail.com": "outlook",
+    "live.com": "outlook",
+    "msn.com": "outlook",
+    "yahoo.com": "yahoo",
+    "yahoo.co.uk": "yahoo",
+    "ymail.com": "yahoo",
+    "icloud.com": "icloud",
+    "me.com": "icloud",
+    "mac.com": "icloud",
+    "fastmail.com": "fastmail",
+    "fastmail.fm": "fastmail",
 }
 
 # --- Settings models ---
@@ -52,9 +53,9 @@ class NotifySettings(BaseModel):
     """Email notification configuration."""
 
     timezone: str = "America/New_York"
-    smtp_host: str | None = None       # manual escape hatch
-    smtp_port: int | None = None       # manual escape hatch
-    smtp_security: Literal["ssl", "starttls"] | None = None  # "ssl"=SMTP_SSL (465), "starttls"=SMTP+STARTTLS (587); inferred from port if unset
+    smtp_host: str | None = None
+    smtp_port: int | None = None
+    smtp_security: Literal["ssl", "starttls"] | None = None
 
 
 class PipelineSettings(BaseModel):
@@ -71,7 +72,10 @@ class PathSettings(BaseModel):
 
 
 class Settings(BaseSettings):
-    """All tunable settings for dailydrop, loaded from environment variables and .env."""
+    """
+    All tunable settings for dailydrop, loaded from environment variables
+    and .env.
+    """
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -89,8 +93,11 @@ class Settings(BaseSettings):
     receiver_email: str = ""
 
 
-def resolve_smtp(notify: NotifySettings, sender_email: str) -> tuple[str, int, str]:
-    """Return (host, port, smtp_security) for the given settings and sender address.
+def resolve_smtp(
+    notify: NotifySettings, sender_email: str
+) -> tuple[str, int, str]:
+    """
+    Return (host, port, security) for the given settings and sender address.
 
     Priority:
     1. Manual smtp_host + smtp_port override (both must be set).
@@ -114,7 +121,8 @@ def resolve_smtp(notify: NotifySettings, sender_email: str) -> tuple[str, int, s
 
     raise ValueError(
         f"Cannot determine SMTP settings for {sender_email!r}. "
-        "Set NOTIFY__SMTP_HOST and NOTIFY__SMTP_PORT, or use a recognised email domain."
+        "Set NOTIFY__SMTP_HOST and NOTIFY__SMTP_PORT, "
+        "or use a recognised email domain."
     )
 
 

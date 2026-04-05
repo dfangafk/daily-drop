@@ -53,6 +53,7 @@ def test_sender_email_override_via_env(monkeypatch):
 
 # --- resolve_smtp tests ---
 
+
 def test_resolve_smtp_gmail_domain():
     notify = NotifySettings()
     host, port, smtp_security = resolve_smtp(notify, "user@gmail.com")
