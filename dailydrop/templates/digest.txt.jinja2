@@ -8,7 +8,7 @@ NEW ITEMS
 =====================================================
 {% for item in all_items %}
 [{{ loop.index }}] {{ item.title }}
-    Source: {{ item.source_name }}{% if item.published_at_display %} | {{ item.published_at_display }}{% endif %}
+    Source: {{ item.source_name }}{% if item.published_at %} | {{ item.published_at.strftime('%d %b') }}{% endif %}
 
     {{ item.url }}
 {% if item.description %}

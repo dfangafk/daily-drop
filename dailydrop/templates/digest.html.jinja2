@@ -42,7 +42,7 @@
       {% for item in all_items %}
       <div class="item">
         <div class="item-header">
-          <span class="item-meta"><span class="pill">{{ item.source_name }}</span>{% if item.published_at_display %} &nbsp;{{ item.published_at_display }}{% endif %}</span>
+          <span class="item-meta"><span class="pill">{{ item.source_name }}</span>{% if item.published_at %} &nbsp;{{ item.published_at.strftime('%d %b') }}{% endif %}</span>
           <span class="item-link"><a href="{{ item.url }}">Read &rarr;</a></span>
         </div>
         <p class="item-title"><a href="{{ item.url }}">{{ item.title }}</a></p>
