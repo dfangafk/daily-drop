@@ -66,6 +66,20 @@ def fetch_feed(url: str) -> list[Item]:
         return []
 
 
+def fetch_page(url: str) -> list[Item]:
+    """Fetch a single web page and return a list of Items.
+
+    Not yet implemented.
+
+    Args:
+        url: URL of the web page to scrape.
+
+    Returns:
+        List of ``Item`` objects parsed from the page.
+    """
+    raise NotImplementedError
+
+
 def fetch_all_feeds(urls: list[str] | None = None) -> list[Item]:
     """Fetch all configured sources and return the combined item list.
 
@@ -77,7 +91,7 @@ def fetch_all_feeds(urls: list[str] | None = None) -> list[Item]:
         ``published_at`` descending (newest first, ``None`` dates last).
     """
     if urls is None:
-        # TODO: handle sources that are not RSS/Atom feeds (e.g. YouTube channels, newsletters)
+        # TODO: handle non-RSS/Atom sources via fetch_page
         urls = [s["url"] for s in load_sources()]
     items = []
     for url in urls:
