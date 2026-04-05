@@ -1,12 +1,9 @@
 """Configuration constants and settings loader for dailydrop."""
 
-import logging
 from pathlib import Path
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
-logger = logging.getLogger(__name__)
 
 # --- Directory paths ---
 
@@ -54,11 +51,12 @@ class Settings(BaseSettings):
     gmail_app_password: str = ""
     receiver_email: str = ""
 
+    @field_validator("sender_gmail")
+    @classmethod
+    def must_be_gmail(cls, v: str) -> str:
+        if v and not v.endswith("@gmail.com"):
+            raise ValueError(f"sender_gmail must end with @gmail.com, got {v!r}")
+        return v
+
 
 settings = Settings()
-
-if settings.sender_gmail and not settings.sender_gmail.endswith("@gmail.com"):
-    logger.warning(
-        "sender_gmail=%r does not end with @gmail.com; SMTP login will likely fail",
-        settings.sender_gmail,
-    )
