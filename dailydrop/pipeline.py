@@ -89,7 +89,6 @@ def main() -> None:
     else:
         logger.info("Sending email notification for %d items", len(recent_items))
         send_notification(reference_time, recent_items)
-        logger.info("Email notification sent")
 
     pipeline_end = datetime.datetime.now(datetime.UTC)
     elapsed = (pipeline_end - pipeline_start).total_seconds()
