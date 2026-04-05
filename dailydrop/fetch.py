@@ -80,7 +80,7 @@ def _fetch_page(url: str) -> list[Item]:
     raise NotImplementedError
 
 
-def fetch_all_feeds(urls: list[str] | None = None) -> list[Item]:
+def fetch_all_sources(urls: list[str] | None = None) -> list[Item]:
     """Fetch all configured sources and return the combined item list.
 
     Args:

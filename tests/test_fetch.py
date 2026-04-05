@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from dailydrop.fetch import _fetch_feed, _load_sources, fetch_all_feeds
+from dailydrop.fetch import _fetch_feed, _load_sources, fetch_all_sources
 from dailydrop.models import Item
 
 _MINIMAL_SOURCES_YAML = """\
@@ -99,22 +99,22 @@ def test_fetch_feed_published_at_is_none_when_no_date(mocker):
     assert items[0].published_at is None
 
 
-def test_fetch_all_feeds_combines_feeds(mocker, sample_items):
+def test_fetch_all_sources_combines_feeds(mocker, sample_items):
     mocker.patch(
         "dailydrop.fetch._fetch_feed",
         side_effect=[sample_items[:2], sample_items[2:]],
     )
 
-    items = fetch_all_feeds(["https://a.example.com/", "https://b.example.com/"])
+    items = fetch_all_sources(["https://a.example.com/", "https://b.example.com/"])
 
     assert len(items) == 3
 
 
-def test_fetch_all_feeds_sorted_newest_first(mocker, sample_items):
-    # sample_items are already sorted oldest→newest; fetch_all_feeds should reverse
+def test_fetch_all_sources_sorted_newest_first(mocker, sample_items):
+    # sample_items are already sorted oldest→newest; fetch_all_sources should reverse
     mocker.patch("dailydrop.fetch._fetch_feed", return_value=sample_items)
 
-    items = fetch_all_feeds(["https://feed.example.com/"])
+    items = fetch_all_sources(["https://feed.example.com/"])
 
     dates = [i.published_at for i in items if i.published_at]
     assert dates == sorted(dates, reverse=True)
