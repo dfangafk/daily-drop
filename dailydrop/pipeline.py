@@ -6,6 +6,7 @@ import sys
 
 from dailydrop.config import settings
 from dailydrop.fetch import fetch_all_feeds, filter_recent_items
+from dailydrop.notify import send_notification
 
 _LOG_FORMAT = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
 _log_level = getattr(logging, settings.pipeline.log_level.upper(), logging.INFO)
@@ -59,6 +60,8 @@ def main() -> None:
 
     # TODO: pass recent_items through an LLM enrichment/ranking step before
     #       notify/persist stages (e.g. score relevance, extract tags, summarise).
+
+    send_notification(t0, recent_items)
 
     elapsed = (datetime.datetime.now(datetime.UTC) - t0).total_seconds()
     logger.info("Pipeline complete in %.1f seconds", elapsed)
