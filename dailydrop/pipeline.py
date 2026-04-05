@@ -1,5 +1,6 @@
 """Orchestrator: fetch → filter → notify → persist."""
 
+import argparse
 import datetime
 import logging
 import sys
@@ -14,9 +15,28 @@ logging.basicConfig(level=_log_level, format=_LOG_FORMAT)
 logger = logging.getLogger(__name__)
 
 
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Run the Daily Drop pipeline.")
+    parser.add_argument(
+        "--hours",
+        type=int,
+        default=24,
+        help="Look-back window in hours (default: 24).",
+    )
+    parser.add_argument(
+        "--reference-time",
+        type=datetime.datetime.fromisoformat,
+        default=None,
+        metavar="DATETIME",
+        help="Reference time in ISO 8601 format (default: now). E.g. 2026-04-04T08:00:00",
+    )
+    return parser.parse_args()
+
+
 def main() -> None:
     """Run the fetch stage of the pipeline."""
-    t0 = datetime.datetime.now(datetime.UTC)
+    args = _parse_args()
+    t0 = args.reference_time if args.reference_time is not None else datetime.datetime.now(datetime.UTC)
     run_date = t0.date()
     logger.info("Pipeline start — run date: %s", run_date)
 
@@ -27,7 +47,7 @@ def main() -> None:
         logger.exception("Fetch failed")
         sys.exit(1)
 
-    recent_items = filter_recent_items(all_items, hours=24)
+    recent_items = filter_recent_items(all_items, hours=args.hours, reference_time=t0)
     logger.info("%d items within the last 24 hours", len(recent_items))
     for item in recent_items:
         logger.debug(
