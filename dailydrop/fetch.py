@@ -1,14 +1,11 @@
 """Fetch new items from all configured RSS sources."""
 
 import datetime
-import html
 import logging
-import re
 from pathlib import Path
 
 import feedparser
 import yaml
-from zoneinfo import ZoneInfo
 
 from dailydrop.config import settings
 from dailydrop.models import Item
@@ -30,15 +27,6 @@ def load_sources(path: Path | None = None) -> list[dict]:
     with open(resolved) as f:
         data = yaml.safe_load(f)
     return data.get("sources", [])
-
-
-def _clean_description(raw: str, max_chars: int = 300) -> str:
-    text = re.sub(r"<[^>]+>", "", raw)
-    text = html.unescape(text)
-    text = " ".join(text.split())
-    if len(text) > max_chars:
-        text = text[:max_chars].rsplit(" ", 1)[0] + "…"
-    return text
 
 
 def fetch_feed(url: str) -> list[Item]:
@@ -63,10 +51,10 @@ def fetch_feed(url: str) -> list[Item]:
                 id=entry.get("id") or entry.get("link", ""),
                 title=entry.get("title", ""),
                 url=entry.get("link", ""),
-                published_at=datetime.datetime(*ts[:6], tzinfo=datetime.timezone.utc).astimezone(ZoneInfo(settings.notify.timezone))
+                published_at=datetime.datetime(*ts[:6], tzinfo=datetime.timezone.utc)
                 if (ts := entry.get("published_parsed"))
                 else None,
-                description=_clean_description(entry.get("summary", "")),
+                description=entry.get("summary", ""),
                 source_name=source_name,
                 source_url=source_url,
             )

@@ -7,6 +7,7 @@ import sys
 
 from dailydrop.config import settings
 from dailydrop.fetch import fetch_all_feeds, filter_recent_items
+from dailydrop.normalize import normalize_items
 from dailydrop.notify import send_notification
 
 _LOG_FORMAT = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
@@ -58,11 +59,13 @@ def main() -> None:
 
     recent_items = filter_recent_items(all_items, hours=args.hours, reference_time=reference_time)
     logger.info(
-        "%d items within the last %d hours (%d filtered out)",
+        "Filtered to %d items within the last %d hours (%d excluded)",
         len(recent_items),
         args.hours,
         len(all_items) - len(recent_items),
     )
+    normalize_items(recent_items)
+    logger.info("Normalization complete")
     for item in recent_items:
         logger.debug(
             "\n  id:           %s"
