@@ -32,7 +32,6 @@ def test_settings_pipeline_defaults():
     s = Settings()
     assert s.pipeline.enable_llm is True
     assert s.pipeline.enable_notify is True
-    assert s.pipeline.enable_archive is True
     assert s.pipeline.save_logs is True
 
 
@@ -84,4 +83,3 @@ def test_paths_default_to_base_dir():
     assert s.paths.sources_yaml.name == "sources.yaml"
     assert s.paths.interests_txt.name == "interests.txt"
     assert s.paths.seen_json.name == "seen.json"
-    assert s.paths.archive_html.name == "archive.html"

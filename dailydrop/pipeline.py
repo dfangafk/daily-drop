@@ -1,12 +1,11 @@
-"""Orchestrator: fetch → dedup → rank → notify → archive → persist."""
+"""Orchestrator: fetch → dedup → rank → notify → persist."""
 
 import datetime
+import json
 import logging
 import sys
 
-from dailydrop.archive import build_archive_context, render_archive, write_archive
 from dailydrop.config import settings
-from dailydrop.dedup import filter_new, load_seen, save_seen
 from dailydrop.fetch import fetch_all_sources
 from dailydrop.llm import build_complete_fn
 from dailydrop.notify import NotifyFn, send_notification
@@ -35,8 +34,7 @@ def main(notify_fn: NotifyFn | None = None) -> None:
     2. Deduplicate against seen.json.
     3. Optionally rank with LLM.
     4. Send email notification.
-    5. Generate and write archive HTML.
-    6. Persist updated seen.json.
+    5. Persist updated seen.json.
 
     Args:
         notify_fn: Injectable notification callable for testing.
@@ -58,8 +56,11 @@ def main(notify_fn: NotifyFn | None = None) -> None:
         sys.exit(1)
 
     # --- Dedup ---
-    seen = load_seen()
-    new_items = filter_new(all_items, seen)
+    seen_path = settings.paths.seen_json
+    seen: set[str] = set()
+    if seen_path.exists():
+        seen = set(json.loads(seen_path.read_text()).get("ids", []))
+    new_items = [item for item in all_items if item.id not in seen]
     logger.info("%d new items after deduplication", len(new_items))
 
     # --- LLM ranking (optional) ---
@@ -88,21 +89,10 @@ def main(notify_fn: NotifyFn | None = None) -> None:
     else:
         logger.info("Email notification disabled (PIPELINE__ENABLE_NOTIFY=false)")
 
-    # --- Archive (optional) ---
-    if settings.pipeline.enable_archive:
-        try:
-            ctx = build_archive_context(new_items, rank_result, run_date.isoformat())
-            html = render_archive(ctx)
-            write_archive(html)
-            logger.info("Archive written to %s", settings.paths.archive_html)
-        except Exception:
-            logger.warning("Archive generation failed; skipping", exc_info=True)
-    else:
-        logger.info("Archive disabled (PIPELINE__ENABLE_ARCHIVE=false)")
-
     # --- Persist seen IDs (always, even if LLM/notify failed) ---
     updated_seen = seen | {item.id for item in new_items}
-    save_seen(updated_seen)
+    seen_path.parent.mkdir(parents=True, exist_ok=True)
+    seen_path.write_text(json.dumps({"ids": sorted(updated_seen)}))
     logger.info("Persisted %d seen IDs", len(updated_seen))
 
     elapsed = (datetime.datetime.now(datetime.UTC) - t0).total_seconds()

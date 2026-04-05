@@ -48,7 +48,6 @@ class PipelineSettings(BaseModel):
     save_logs: bool = True
     enable_llm: bool = True
     enable_notify: bool = True
-    enable_archive: bool = True
 
 
 class RankSettings(BaseModel):
@@ -76,7 +75,6 @@ class PathSettings(BaseModel):
     sources_yaml: Path = BASE_DIR / "config" / "sources.yaml"
     interests_txt: Path = BASE_DIR / "config" / "interests.txt"
     seen_json: Path = BASE_DIR / "data" / "seen.json"
-    archive_html: Path = BASE_DIR / "docs" / "archive.html"
     logs_output_dir: Path = BASE_DIR / "data" / "logs"
     templates_dir: Path = BASE_DIR / "dailydrop" / "templates"
 
