@@ -1,7 +1,9 @@
 """Fetch new items from all configured RSS sources."""
 
 import datetime
+import html
 import logging
+import re
 from pathlib import Path
 
 import feedparser
@@ -30,6 +32,15 @@ def load_sources(path: Path | None = None) -> list[dict]:
     return data.get("sources", [])
 
 
+def _clean_description(raw: str, max_chars: int = 300) -> str:
+    text = re.sub(r"<[^>]+>", "", raw)
+    text = html.unescape(text)
+    text = " ".join(text.split())
+    if len(text) > max_chars:
+        text = text[:max_chars].rsplit(" ", 1)[0] + "…"
+    return text
+
+
 def fetch_feed(url: str) -> list[Item]:
     """Fetch a single RSS/Atom feed and return a list of Items.
 
@@ -55,7 +66,7 @@ def fetch_feed(url: str) -> list[Item]:
                 published_at=datetime.datetime(*ts[:6], tzinfo=datetime.timezone.utc).astimezone(ZoneInfo(settings.notify.timezone))
                 if (ts := entry.get("published_parsed"))
                 else None,
-                description=entry.get("summary", ""),
+                description=_clean_description(entry.get("summary", "")),
                 source_name=source_name,
                 source_url=source_url,
             )
