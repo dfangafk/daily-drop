@@ -11,6 +11,8 @@ NEW ITEMS
     Source: {{ item.source_name }}{% if item.published_at_display %} | {{ item.published_at_display }}{% endif %}
 
     {{ item.url }}
-
+{% if item.description %}
+    {{ item.description }}
+{% endif %}
 -----------------------------------------------------
 {% endfor %}
