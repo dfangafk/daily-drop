@@ -19,7 +19,7 @@ def sample_items() -> list[Item]:
     return [
         Item(
             id="https://example.com/a",
-            source_type="rss",
+            source_url="https://example.com/feed.xml",
             source_name="Test Blog",
             title="Article A",
             url="https://example.com/a",
@@ -28,7 +28,7 @@ def sample_items() -> list[Item]:
         ),
         Item(
             id="https://example.com/b",
-            source_type="rss",
+            source_url="https://example.com/feed.xml",
             source_name="Test Blog",
             title="Article B",
             url="https://example.com/b",
@@ -37,7 +37,7 @@ def sample_items() -> list[Item]:
         ),
         Item(
             id="https://example.com/c",
-            source_type="rss",
+            source_url="https://example.com/feed.xml",
             source_name="Other Feed",
             title="Article C",
             url="https://example.com/c",

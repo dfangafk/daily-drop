@@ -6,7 +6,7 @@ import logging
 import sys
 
 from dailydrop.config import settings
-from dailydrop.fetch import fetch_all_sources
+from dailydrop.fetch import fetch_all_feeds
 from dailydrop.llm import build_complete_fn
 from dailydrop.notify import NotifyFn, send_notification
 from dailydrop.rank import rank_items
@@ -49,7 +49,7 @@ def main(notify_fn: NotifyFn | None = None) -> None:
 
     # --- Fetch ---
     try:
-        all_items = fetch_all_sources()
+        all_items = fetch_all_feeds()
         logger.info("Fetched %d total items across all sources", len(all_items))
     except Exception:
         logger.exception("Fetch failed")

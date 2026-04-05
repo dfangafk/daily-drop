@@ -15,7 +15,7 @@ class Item:
         id: Stable unique identifier (typically the feed entry's ``id`` or
             ``link`` field so the same article never appears twice even if
             the feed rotates IDs).
-        source_type: Feed type, e.g. ``"rss"``.
+        source_url: Canonical URL of the source feed or channel.
         source_name: Human-readable feed name from ``sources.yaml``.
         title: Entry title.
         url: Canonical link to the content.
@@ -30,8 +30,8 @@ class Item:
     url: str
     published_at: datetime.datetime | None
     description: str = ""
-    source_type: str = ""
     source_name: str = ""
+    source_url: str = ""
 
 
 @dataclass

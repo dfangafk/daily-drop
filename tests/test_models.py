@@ -10,7 +10,7 @@ from dailydrop.models import Item, RankResult
 def test_item_construction():
     item = Item(
         id="https://example.com/1",
-        source_type="rss",
+        source_url="https://example.com/feed.xml",
         source_name="Test Feed",
         title="Test Title",
         url="https://example.com/1",
@@ -23,7 +23,7 @@ def test_item_construction():
 def test_item_none_published_at():
     item = Item(
         id="x",
-        source_type="rss",
+        source_url="https://example.com/feed.xml",
         source_name="Feed",
         title="Title",
         url="https://example.com",
