@@ -36,7 +36,10 @@ def _parse_args() -> argparse.Namespace:
 def main() -> None:
     """Run the fetch stage of the pipeline."""
     args = _parse_args()
-    t0 = args.reference_time if args.reference_time is not None else datetime.datetime.now(datetime.UTC)
+    if args.reference_time is not None:
+        t0 = args.reference_time if args.reference_time.tzinfo is not None else args.reference_time.replace(tzinfo=datetime.timezone.utc)
+    else:
+        t0 = datetime.datetime.now(datetime.UTC)
     run_date = t0.date()
     logger.info("Pipeline start — run date: %s", run_date)
 
