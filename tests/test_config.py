@@ -8,8 +8,6 @@ def test_settings_notify_defaults():
     assert s.notify.smtp_host == "smtp.gmail.com"
     assert s.notify.smtp_port == 465
     assert s.notify.timezone == "America/New_York"
-    assert "{date}" in s.notify.subject_template
-    assert "{count}" in s.notify.subject_template
 
 
 def test_settings_pipeline_defaults():

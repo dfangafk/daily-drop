@@ -21,7 +21,6 @@ class NotifySettings(BaseModel):
     timezone: str = "America/New_York"
     smtp_host: str = "smtp.gmail.com"
     smtp_port: int = 465
-    subject_template: str = "Daily Drop — {date} ({count} new items)"
 
 
 class PipelineSettings(BaseModel):

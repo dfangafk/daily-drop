@@ -39,13 +39,15 @@ def send_notification(
     date_display = dt_local.strftime('%A, %B %-d')
     item_count = len(recent_items)
 
-    subject = settings.notify.subject_template.format(date=date_str, count=item_count)
     ctx = {
         "date": date_display,
-        "all_items": recent_items,
+        "count": item_count,
+        "all_finds": recent_items,
     }
     loader = FileSystemLoader(str(settings.paths.templates_dir))
-    text_body = Environment(loader=loader, autoescape=False).get_template("drop.txt.jinja2").render(**ctx)
+    env = Environment(loader=loader, autoescape=False)
+    subject = env.get_template("drop.subject.jinja2").render(date=date_str, count=item_count)
+    text_body = env.get_template("drop.txt.jinja2").render(**ctx)
     html_body = Environment(loader=loader, autoescape=True).get_template("drop.html.jinja2").render(**ctx)
 
     msg = MIMEMultipart("alternative")

@@ -1,18 +1,18 @@
 Daily Drop — {{ date }}
 =====================================================
 
-{{ all_items | length }} new item{{ "s" if all_items | length != 1 else "" }} today
+{{ all_finds | length }} new find{{ "s" if all_finds | length != 1 else "" }} today
 
 =====================================================
-NEW ITEMS
+NEW FINDS
 =====================================================
-{% for item in all_items %}
-[{{ loop.index }}] {{ item.title }}
-    Source: {{ item.source_name }}{% if item.published_at %} | {{ item.published_at.strftime('%d %b') }}{% endif %}
+{% for find in all_finds %}
+[{{ loop.index }}] {{ find.title }}
+    Source: {{ find.source_name }}{% if find.published_at %} | {{ find.published_at.strftime('%d %b') }}{% endif %}
 
-    {{ item.url }}
-{% if item.description %}
-    {{ item.description }}
+    {{ find.url }}
+{% if find.description %}
+    {{ find.description }}
 {% endif %}
 -----------------------------------------------------
 {% endfor %}

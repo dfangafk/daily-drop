@@ -12,14 +12,14 @@
     .header p { margin: 6px 0 0; font-size: 13px; color: #475569; letter-spacing: 0.3px; }
     .body { padding: 12px 32px; }
     .section-title { font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.6px; margin: 0 0 12px; }
-    .item { border-bottom: 1px solid #E2E8F0; padding: 14px 0; }
-    .item:last-child { border-bottom: none; }
-    .item-title { font-size: 15px; font-weight: 600; line-height: 1.4; margin: 0 0 4px; }
-    .item-byline { font-size: 11px; color: #6B7280; margin: 0 0 6px; }
-    .item-title a { color: #1A1A1A; text-decoration: none; }
-    .item-desc { font-size: 13px; color: #222222; line-height: 1.5; margin: 0 0 8px; }
-    .item-thumb { display: block; margin: 8px auto 4px; width: 100%; max-width: 320px; }
-    .item-thumb img { width: 100%; border-radius: 6px; display: block; }
+    .find { border-bottom: 1px solid #E2E8F0; padding: 14px 0; }
+    .find:last-child { border-bottom: none; }
+    .find-title { font-size: 15px; font-weight: 600; line-height: 1.4; margin: 0 0 4px; }
+    .find-byline { font-size: 11px; color: #6B7280; margin: 0 0 6px; }
+    .find-title a { color: #1A1A1A; text-decoration: none; }
+    .find-desc { font-size: 13px; color: #222222; line-height: 1.5; margin: 0 0 8px; }
+    .find-thumb { display: block; margin: 8px auto 4px; width: 100%; max-width: 320px; }
+    .find-thumb img { width: 100%; border-radius: 6px; display: block; }
     .footer { border-top: 1px solid #E2E8F0; padding: 10px 32px; font-size: 12px; color: #475569; text-align: center; line-height: 1.6; }
     .footer a { color: #2563EB; }
   </style>
@@ -33,16 +33,16 @@
     </div>
 
     <div class="body">
-      <!-- All new items -->
-      {% if all_items %}
-{% for item in all_items %}
-      <div class="item">
-        <p class="item-title"><a href="{{ item.url }}">{{ item.title }}</a></p>
-        <p class="item-byline">by {{ item.source_name }}</p>
-        {% if item.description %}<p class="item-desc">{{ item.description }}</p>{% endif %}
-        {% if item.youtube_id %}
-        <a href="{{ item.url }}" class="item-thumb">
-          <img src="https://img.youtube.com/vi/{{ item.youtube_id }}/mqdefault.jpg" alt="Video preview — Enable image loading to view">
+      <!-- All new finds -->
+      {% if all_finds %}
+{% for find in all_finds %}
+      <div class="find">
+        <p class="find-title"><a href="{{ find.url }}">{{ find.title }}</a></p>
+        <p class="find-byline">by {{ find.source_name }}</p>
+        {% if find.description %}<p class="find-desc">{{ find.description }}</p>{% endif %}
+        {% if find.youtube_id %}
+        <a href="{{ find.url }}" class="find-thumb">
+          <img src="https://img.youtube.com/vi/{{ find.youtube_id }}/mqdefault.jpg" alt="Video preview — Enable image loading to view">
         </a>
         {% endif %}
       </div>
