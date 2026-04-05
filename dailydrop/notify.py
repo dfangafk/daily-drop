@@ -43,8 +43,8 @@ def send_notification(
         "all_items": recent_items,
     }
     loader = FileSystemLoader(str(settings.paths.templates_dir))
-    text_body = Environment(loader=loader, autoescape=False).get_template("digest.txt.jinja2").render(**ctx)
-    html_body = Environment(loader=loader, autoescape=True).get_template("digest.html.jinja2").render(**ctx)
+    text_body = Environment(loader=loader, autoescape=False).get_template("drop.txt.jinja2").render(**ctx)
+    html_body = Environment(loader=loader, autoescape=True).get_template("drop.html.jinja2").render(**ctx)
 
     msg = MIMEMultipart("alternative")
     msg["From"] = settings.sender_gmail
