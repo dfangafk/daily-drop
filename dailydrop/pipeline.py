@@ -1,15 +1,11 @@
-"""Orchestrator: fetch → dedup → rank → notify → persist."""
+"""Orchestrator: fetch → rank → notify → persist."""
 
 import datetime
-import json
 import logging
 import sys
 
 from dailydrop.config import settings
-from dailydrop.fetch import fetch_all_feeds
-from dailydrop.llm import build_complete_fn
-from dailydrop.notify import NotifyFn, send_notification
-from dailydrop.rank import rank_items
+from dailydrop.fetch import fetch_all_feeds, filter_recent_items
 
 _LOG_FORMAT = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
 _log_level = getattr(logging, settings.pipeline.log_level.upper(), logging.INFO)
@@ -26,28 +22,14 @@ def _add_file_handler(run_date: datetime.date) -> None:
     logging.getLogger().addHandler(file_handler)
 
 
-def main(notify_fn: NotifyFn | None = None) -> None:
-    """Run the full curation pipeline.
-
-    Pipeline stages:
-    1. Fetch all RSS sources.
-    2. Deduplicate against seen.json.
-    3. Optionally rank with LLM.
-    4. Send email notification.
-    5. Persist updated seen.json.
-
-    Args:
-        notify_fn: Injectable notification callable for testing.
-            Defaults to ``send_notification``.
-    """
-    # --- Setup ---
+def main() -> None:
+    """Run the fetch stage of the pipeline."""
     t0 = datetime.datetime.now(datetime.UTC)
     run_date = t0.date()
     if settings.pipeline.save_logs:
         _add_file_handler(run_date)
     logger.info("Pipeline start — run date: %s", run_date)
 
-    # --- Fetch ---
     try:
         all_items = fetch_all_feeds()
         logger.info("Fetched %d total items across all sources", len(all_items))
@@ -55,45 +37,25 @@ def main(notify_fn: NotifyFn | None = None) -> None:
         logger.exception("Fetch failed")
         sys.exit(1)
 
-    # --- Dedup ---
-    seen_path = settings.paths.seen_json
-    seen: set[str] = set()
-    if seen_path.exists():
-        seen = set(json.loads(seen_path.read_text()).get("ids", []))
-    new_items = [item for item in all_items if item.id not in seen]
-    logger.info("%d new items after deduplication", len(new_items))
-
-    # --- LLM ranking (optional) ---
-    rank_result = None
-    if settings.pipeline.enable_llm:
-        complete = build_complete_fn()
-        if complete is not None:
-            try:
-                rank_result = rank_items(new_items, complete)
-                logger.info(
-                    "Ranking complete: %d picks, summary %d chars",
-                    len(rank_result.picks),
-                    len(rank_result.summary),
-                )
-            except Exception:
-                logger.warning("LLM ranking failed; skipping", exc_info=True)
-        else:
-            logger.info("No LLM provider available; skipping ranking")
-    else:
-        logger.info("LLM ranking disabled (PIPELINE__ENABLE_LLM=false)")
-
-    # --- Email notification (optional) ---
-    if settings.pipeline.enable_notify:
-        notifier = notify_fn if notify_fn is not None else send_notification
-        notifier(t0, new_items, rank_result)
-    else:
-        logger.info("Email notification disabled (PIPELINE__ENABLE_NOTIFY=false)")
-
-    # --- Persist seen IDs (always, even if LLM/notify failed) ---
-    updated_seen = seen | {item.id for item in new_items}
-    seen_path.parent.mkdir(parents=True, exist_ok=True)
-    seen_path.write_text(json.dumps({"ids": sorted(updated_seen)}))
-    logger.info("Persisted %d seen IDs", len(updated_seen))
+    recent_items = filter_recent_items(all_items, hours=24)
+    logger.info("%d items within the last 24 hours", len(recent_items))
+    for item in recent_items:
+        logger.debug(
+            "\n  id:           %s"
+            "\n  title:        %s"
+            "\n  description:  %s"
+            "\n  url:          %s"
+            "\n  published_at: %s"
+            "\n  source_name:  %s"
+            "\n  source_url:   %s",
+            item.id,
+            item.title,
+            item.description[:120] + "…" if len(item.description) > 120 else item.description,
+            item.url,
+            item.published_at,
+            item.source_name,
+            item.source_url,
+        )
 
     elapsed = (datetime.datetime.now(datetime.UTC) - t0).total_seconds()
     logger.info("Pipeline complete in %.1f seconds", elapsed)
