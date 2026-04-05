@@ -120,5 +120,5 @@ def filter_recent_items(
     if reference_time is None:
         reference_time =datetime.datetime.now(tz=datetime.timezone.utc)
     cutoff = reference_time - datetime.timedelta(hours=hours)
-    recent_items = [item for item in items if item.published_at and item.published_at >= cutoff]
+    recent_items = [item for item in items if item.published_at and cutoff <= item.published_at <= reference_time]
     return recent_items
