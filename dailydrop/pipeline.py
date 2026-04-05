@@ -30,7 +30,7 @@ def _parse_args() -> argparse.Namespace:
         help="Reference time in ISO 8601 format (default: now). E.g. 2026-04-04T08:00:00",
     )
     parser.add_argument(
-        "--no-email",
+        "--skip-email",
         action="store_true",
         help="Skip sending the notification email.",
     )
@@ -79,7 +79,7 @@ def main() -> None:
                 item.source_url,
             )
 
-        if args.no_email:
+        if args.skip_email:
             logger.info("Skipping email notification")
         else:
             logger.info("Sending email notification for %d items", len(recent_items))
