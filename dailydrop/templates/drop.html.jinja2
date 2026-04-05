@@ -9,20 +9,19 @@
     .wrapper { max-width: 620px; margin: 0 auto; background: #FFFFFF; }
     .header { border-bottom: 2px solid #E2E8F0; padding: 28px 32px 20px; text-align: center; }
     .header h1 { margin: 0; font-size: 22px; letter-spacing: -0.3px; color: #0F172A; font-weight: 700; }
-    .header p { margin: 6px 0 0; font-size: 13px; color: #475569; letter-spacing: 0.3px; text-transform: uppercase; }
-    .body { padding: 24px 32px; }
-    .section-title { font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.6px; margin: 24px 0 12px; }
+    .header p { margin: 6px 0 0; font-size: 13px; color: #475569; letter-spacing: 0.3px; }
+    .body { padding: 12px 32px; }
+    .section-title { font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.6px; margin: 0 0 12px; }
     .item { border-bottom: 1px solid #E2E8F0; padding: 14px 0; }
     .item:last-child { border-bottom: none; }
-    .item-header { display: table; width: 100%; margin-bottom: 6px; }
-    .item-meta { display: table-cell; font-size: 12px; color: #475569; }
-    .item-link { display: table-cell; text-align: right; font-size: 12px; white-space: nowrap; }
-    .item-link a { color: #2563EB; text-decoration: none; border-bottom: 1px solid #BFDBFE; }
+    .item-top { margin-bottom: 6px; }
+    .item-date { font-size: 11px; color: #94A3B8; margin-left: 4px; }
     .item-title { font-size: 15px; font-weight: 600; line-height: 1.4; margin: 0 0 6px; color: #0F172A; }
     .item-title a { color: #0F172A; text-decoration: none; }
     .item-title a:hover { color: #2563EB; }
-    .pill { display: inline-block; background: #F1F5F9; color: #334155; font-size: 11px; padding: 2px 8px; border-radius: 10px; margin-right: 4px; border: 1px solid #E2E8F0; }
+    .pill { display: inline-block; background: #F1F5F9; color: #334155; font-size: 11px; padding: 2px 8px; border-radius: 10px; border: 1px solid #E2E8F0; }
     .item-desc { font-size: 13px; color: #475569; line-height: 1.5; margin: 0; }
+    .item-read { display: inline-block; margin-top: 6px; font-size: 12px; font-weight: 600; color: #2563EB; text-decoration: none; }
     .footer { border-top: 1px solid #E2E8F0; padding: 20px 32px; font-size: 12px; color: #475569; text-align: center; line-height: 1.6; }
     .footer a { color: #2563EB; }
   </style>
@@ -38,15 +37,15 @@
     <div class="body">
       <!-- All new items -->
       {% if all_items %}
-      <div class="section-title">All new items today</div>
-      {% for item in all_items %}
+{% for item in all_items %}
       <div class="item">
-        <div class="item-header">
-          <span class="item-meta"><span class="pill">{{ item.source_name }}</span>{% if item.published_at %} &nbsp;{{ item.published_at.strftime('%d %b') }}{% endif %}</span>
-          <span class="item-link"><a href="{{ item.url }}">Read &rarr;</a></span>
+        <div class="item-top">
+          <span class="pill">{{ item.source_name }}</span>
+          {% if item.published_at %}<span class="item-date">{{ item.published_at.strftime('%b %-d, %Y, %-I:%M %p') }}</span>{% endif %}
         </div>
         <p class="item-title"><a href="{{ item.url }}">{{ item.title }}</a></p>
         {% if item.description %}<p class="item-desc">{{ item.description }}</p>{% endif %}
+        <a href="{{ item.url }}" class="item-read">Read &rarr;</a>
       </div>
       {% endfor %}
       {% endif %}

@@ -34,12 +34,14 @@ def send_notification(
         return
 
     tz = ZoneInfo(settings.notify.timezone)
-    date_str = reference_time.astimezone(tz).date().isoformat()
+    dt_local = reference_time.astimezone(tz)
+    date_str = dt_local.date().isoformat()
+    date_display = dt_local.strftime('%A, %B %-d')
     item_count = len(recent_items)
 
     subject = settings.notify.subject_template.format(date=date_str, count=item_count)
     ctx = {
-        "date": date_str,
+        "date": date_display,
         "all_items": recent_items,
     }
     loader = FileSystemLoader(str(settings.paths.templates_dir))
