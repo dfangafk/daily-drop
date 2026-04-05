@@ -29,6 +29,9 @@ htmlcov/
 .env.local
 .env.*.local
 
+# User-specific config (copy sources.example.yaml to sources.yaml and customize)
+sources.yaml
+
 # Data / output (generated artifacts)
 data/*
 !data/.gitkeep

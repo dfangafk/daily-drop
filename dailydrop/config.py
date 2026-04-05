@@ -33,7 +33,7 @@ class PipelineSettings(BaseModel):
 class PathSettings(BaseModel):
     """Filesystem paths for the pipeline."""
 
-    sources_yaml: Path = BASE_DIR / "config" / "sources.yaml"
+    sources_yaml: Path = BASE_DIR / "sources.yaml"
     templates_dir: Path = BASE_DIR / "dailydrop" / "templates"
 
 
