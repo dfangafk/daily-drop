@@ -1,24 +1,10 @@
 dailydrop — {{ date }}
 =====================================================
 
-SUMMARY ({{ all_items | length }} new item{{ "s" if all_items | length != 1 else "" }} today)
------------------------------------------------------
-{{ summary if summary else "No summary available." }}
+{{ all_items | length }} new item{{ "s" if all_items | length != 1 else "" }} today
 
-{% if picks %}
 =====================================================
-RECOMMENDED FOR YOU
-=====================================================
-{% for pick in picks %}
-[{{ loop.index }}] {{ pick.item.title }}
-    Source: {{ pick.item.source_name }}
-    {{ pick.rationale }}
-    {{ pick.item.url }}
-
-{% endfor %}
-{% endif %}
-=====================================================
-ALL NEW ITEMS
+NEW ITEMS
 =====================================================
 {% for item in all_items %}
 [{{ loop.index }}] {{ item.title }}
