@@ -14,14 +14,14 @@
     .section-title { font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.6px; margin: 0 0 12px; }
     .item { border-bottom: 1px solid #E2E8F0; padding: 14px 0; }
     .item:last-child { border-bottom: none; }
-    .item-top { margin-bottom: 6px; }
-    .item-date { font-size: 11px; color: #94A3B8; margin-left: 4px; }
+    .item-header { display: table; width: 100%; margin-bottom: 6px; }
+    .item-date { display: table-cell; font-size: 12px; color: #475569; }
+    .item-link { display: table-cell; text-align: right; font-size: 12px; white-space: nowrap; }
+    .item-link a { color: #2563EB; text-decoration: none; border-bottom: 1px solid #BFDBFE; }
     .item-title { font-size: 15px; font-weight: 600; line-height: 1.4; margin: 0 0 6px; color: #0F172A; }
-    .item-title a { color: #0F172A; text-decoration: none; }
-    .item-title a:hover { color: #2563EB; }
     .pill { display: inline-block; background: #F1F5F9; color: #334155; font-size: 11px; padding: 2px 8px; border-radius: 10px; border: 1px solid #E2E8F0; }
-    .item-desc { font-size: 13px; color: #475569; line-height: 1.5; margin: 0; }
-    .item-read { display: inline-block; margin-top: 6px; font-size: 12px; font-weight: 600; color: #2563EB; text-decoration: none; }
+    .item-desc { font-size: 13px; color: #475569; line-height: 1.5; margin: 0 0 8px; }
+    .item-source { margin-top: 8px; }
     .item-thumb { display: block; margin: 8px auto 4px; width: 100%; max-width: 320px; }
     .item-thumb img { width: 100%; border-radius: 6px; display: block; }
     .footer { border-top: 1px solid #E2E8F0; padding: 10px 32px; font-size: 12px; color: #475569; text-align: center; line-height: 1.6; }
@@ -41,18 +41,18 @@
       {% if all_items %}
 {% for item in all_items %}
       <div class="item">
-        <div class="item-top">
-          <span class="pill">{{ item.source_name }}</span>
-          {% if item.published_at %}<span class="item-date">{{ item.published_at.strftime('%b %-d, %Y, %-I:%M %p') }}</span>{% endif %}
+        <div class="item-header">
+          {% if item.published_at %}<span class="item-date">{{ item.published_at.strftime('%b %-d, %Y, %-I:%M %p') }}</span>{% else %}<span class="item-date"></span>{% endif %}
+          <span class="item-link"><a href="{{ item.url }}">View &rarr;</a></span>
         </div>
-        <p class="item-title"><a href="{{ item.url }}">{{ item.title }}</a></p>
+        <p class="item-title">{{ item.title }}</p>
         {% if item.description %}<p class="item-desc">{{ item.description }}</p>{% endif %}
         {% if item.youtube_id %}
         <a href="{{ item.url }}" class="item-thumb">
           <img src="https://img.youtube.com/vi/{{ item.youtube_id }}/mqdefault.jpg" alt="Video preview — Enable image loading to view">
         </a>
         {% endif %}
-        <a href="{{ item.url }}" class="item-read">{% if item.youtube_id %}Watch{% else %}Read{% endif %} &rarr;</a>
+        <div class="item-source"><span class="pill">{{ item.source_name }}</span></div>
       </div>
       {% endfor %}
       {% endif %}
