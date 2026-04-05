@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 def send_notification(
     reference_time: datetime.datetime,
-    new_items: list[Item],
+    recent_items: list[Item],
 ) -> None:
     """Send daily digest email after pipeline completion.
 
@@ -27,7 +27,7 @@ def send_notification(
 
     Args:
         reference_time: UTC timestamp of the pipeline run.
-        new_items: All new (deduplicated) items fetched this run.
+        recent_items: Items from the last 24 hours fetched this run.
     """
     if not (settings.sender_gmail and settings.gmail_app_password and settings.receiver_email):
         logger.info("Email notification skipped (credentials not set)")
@@ -35,12 +35,12 @@ def send_notification(
 
     tz = ZoneInfo(settings.notify.timezone)
     date_str = reference_time.astimezone(tz).date().isoformat()
-    item_count = len(new_items)
+    item_count = len(recent_items)
 
     subject = settings.notify.subject_template.format(date=date_str, count=item_count)
     ctx = {
         "date": date_str,
-        "all_items": new_items,
+        "all_items": recent_items,
     }
     loader = FileSystemLoader(str(settings.paths.templates_dir))
     text_body = Environment(loader=loader, autoescape=False).get_template("digest.txt.jinja2").render(**ctx)
