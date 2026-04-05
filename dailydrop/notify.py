@@ -19,7 +19,6 @@ logger = logging.getLogger(__name__)
 def send_notification(
     reference_time: datetime.datetime,
     new_items: list[Item],
-    rank_result: dict | None,
 ) -> None:
     """Send daily digest email after pipeline completion.
 
@@ -29,7 +28,6 @@ def send_notification(
     Args:
         reference_time: UTC timestamp of the pipeline run.
         new_items: All new (deduplicated) items fetched this run.
-        rank_result: LLM-ranked picks, or ``None`` if ranking was skipped.
     """
     if not (settings.sender_gmail and settings.gmail_app_password and settings.receiver_email):
         logger.info("Email notification skipped (credentials not set)")

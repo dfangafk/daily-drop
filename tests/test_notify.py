@@ -16,7 +16,7 @@ def test_send_notification_skips_when_no_credentials(mocker, sample_items):
     mock_smtp = mocker.patch("dailydrop.notify.smtplib.SMTP_SSL")
 
     t0 = datetime.datetime(2026, 4, 1, 12, 0, tzinfo=datetime.UTC)
-    send_notification(t0, sample_items, None)
+    send_notification(t0, sample_items)
 
     mock_smtp.assert_not_called()
 
@@ -34,7 +34,7 @@ def test_send_notification_calls_smtp(mocker, sample_items):
     mocker.patch("dailydrop.notify.Environment", return_value=mock_env)
 
     t0 = datetime.datetime(2026, 4, 1, 12, 0, tzinfo=datetime.UTC)
-    send_notification(t0, sample_items, None)
+    send_notification(t0, sample_items)
 
     mock_smtp_instance.login.assert_called_once_with("test@gmail.com", "app-pass")
     mock_smtp_instance.send_message.assert_called_once()
@@ -53,7 +53,7 @@ def test_send_notification_subject_contains_date_and_count(mocker, sample_items)
     mocker.patch("dailydrop.notify.Environment", return_value=mock_env)
 
     t0 = datetime.datetime(2026, 4, 1, 12, 0, tzinfo=datetime.UTC)
-    send_notification(t0, sample_items, None)
+    send_notification(t0, sample_items)
 
     sent_msg = mock_smtp_instance.send_message.call_args[0][0]
     assert "2026-04-01" in sent_msg["Subject"]
