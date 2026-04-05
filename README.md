@@ -20,18 +20,14 @@ cp .env.example .env
 
 ## Configuration
 
-### Sources (`config/sources.yaml`)
+### Sources (`sources.yaml`)
 
 ```yaml
 sources:
   - name: "Lex Fridman Podcast"
-    type: rss
     url: "https://lexfridman.com/feed/podcast/"
-    category: "podcasts"
   - name: "Hacker News"
-    type: rss
     url: "https://news.ycombinator.com/rss"
-    category: "tech"
 ```
 
 YouTube channels expose RSS at:
