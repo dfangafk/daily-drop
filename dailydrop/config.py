@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # --- Directory paths ---
@@ -47,16 +47,9 @@ class Settings(BaseSettings):
     paths: PathSettings = PathSettings()
 
     # Secrets from .env
-    sender_gmail: str = ""
-    gmail_app_password: str = ""
+    sender_email: str = ""
+    smtp_password: str = ""
     receiver_email: str = ""
-
-    @field_validator("sender_gmail")
-    @classmethod
-    def must_be_gmail(cls, v: str) -> str:
-        if v and not v.endswith("@gmail.com"):
-            raise ValueError(f"sender_gmail must end with @gmail.com, got {v!r}")
-        return v
 
 
 settings = Settings()

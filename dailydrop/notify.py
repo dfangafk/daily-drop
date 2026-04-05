@@ -29,7 +29,7 @@ def send_notification(
         reference_time: UTC timestamp of the pipeline run.
         recent_items: Items from the last 24 hours fetched this run.
     """
-    if not (settings.sender_gmail and settings.gmail_app_password and settings.receiver_email):
+    if not (settings.sender_email and settings.smtp_password and settings.receiver_email):
         logger.info("Email notification skipped (credentials not set)")
         return
 
@@ -51,7 +51,7 @@ def send_notification(
     html_body = Environment(loader=loader, autoescape=True).get_template("drop.html.jinja2").render(**ctx)
 
     msg = MIMEMultipart("alternative")
-    msg["From"] = settings.sender_gmail
+    msg["From"] = settings.sender_email
     msg["To"] = settings.receiver_email
     msg["Subject"] = subject
     msg.attach(MIMEText(text_body, "plain"))
@@ -60,7 +60,7 @@ def send_notification(
     try:
         context = ssl.create_default_context()
         with smtplib.SMTP_SSL(settings.notify.smtp_host, settings.notify.smtp_port, context=context) as server:
-            server.login(settings.sender_gmail, settings.gmail_app_password)
+            server.login(settings.sender_email, settings.smtp_password)
             server.send_message(msg)
         _email = settings.receiver_email
         _masked = _email[:2] + "***" + _email[_email.index("@"):]
