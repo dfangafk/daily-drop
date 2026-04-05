@@ -41,12 +41,13 @@ def _parse_args() -> argparse.Namespace:
 def main() -> None:
     """Run the fetch stage of the pipeline."""
     args = _parse_args()
+    pipeline_start = datetime.datetime.now(datetime.UTC)
     if args.reference_time is not None:
-        t0 = args.reference_time if args.reference_time.tzinfo is not None else args.reference_time.replace(tzinfo=datetime.timezone.utc)
+        reference_time = args.reference_time if args.reference_time.tzinfo is not None else args.reference_time.replace(tzinfo=datetime.timezone.utc)
     else:
-        t0 = datetime.datetime.now(datetime.UTC)
-    run_date = t0.date()
-    logger.info("Pipeline start — run date: %s", run_date)
+        reference_time = pipeline_start
+    run_date = reference_time.date()
+    logger.info("Pipeline start — run date: %s, reference time: %s, look-back: %d hours", run_date, reference_time.isoformat(), args.hours)
 
     try:
         all_items = fetch_all_feeds()
@@ -55,8 +56,13 @@ def main() -> None:
         logger.exception("Fetch failed")
         sys.exit(1)
 
-    recent_items = filter_recent_items(all_items, hours=args.hours, reference_time=t0)
-    logger.info("%d items within the last 24 hours", len(recent_items))
+    recent_items = filter_recent_items(all_items, hours=args.hours, reference_time=reference_time)
+    logger.info(
+        "%d items within the last %d hours (%d filtered out)",
+        len(recent_items),
+        args.hours,
+        len(all_items) - len(recent_items),
+    )
     for item in recent_items:
         logger.debug(
             "\n  id:           %s"
@@ -81,9 +87,12 @@ def main() -> None:
     if args.no_email:
         logger.info("Skipping email notification")
     else:
-        send_notification(t0, recent_items)
+        logger.info("Sending email notification for %d items", len(recent_items))
+        send_notification(reference_time, recent_items)
+        logger.info("Email notification sent")
 
-    elapsed = (datetime.datetime.now(datetime.UTC) - t0).total_seconds()
+    pipeline_end = datetime.datetime.now(datetime.UTC)
+    elapsed = (pipeline_end - pipeline_start).total_seconds()
     logger.info("Pipeline complete in %.1f seconds", elapsed)
 
 
