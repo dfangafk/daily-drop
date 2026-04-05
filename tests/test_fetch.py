@@ -41,12 +41,7 @@ def test_fetch_feed_returns_items(mocker):
         "title": "Entry One",
         "summary": "A brief summary.",
     }.get(k, default)
-    mock_entry.id = "https://example.com/entry1"
-    mock_entry.link = "https://example.com/entry1"
-    mock_entry.title = "Entry One"
-    mock_entry.summary = "A brief summary."
     mock_entry.published_parsed = None
-    mock_entry.updated_parsed = None
 
     mock_feed = MagicMock()
     mock_feed.entries = [mock_entry]
@@ -54,8 +49,7 @@ def test_fetch_feed_returns_items(mocker):
 
     mocker.patch("dailydrop.fetch.feedparser.parse", return_value=mock_feed)
 
-    source = {"name": "Test Feed", "type": "rss", "url": "https://example.com/feed.xml", "category": "tech"}
-    items = fetch_feed(source)
+    items = fetch_feed("https://example.com/feed.xml")
 
     assert isinstance(items, list)
     assert all(isinstance(i, Item) for i in items)
@@ -63,78 +57,67 @@ def test_fetch_feed_returns_items(mocker):
 
 def test_fetch_feed_returns_empty_on_error(mocker):
     mocker.patch("dailydrop.fetch.feedparser.parse", side_effect=Exception("network error"))
-    source = {"name": "Broken Feed", "type": "rss", "url": "https://bad.example.com/", "category": "tech"}
-    items = fetch_feed(source)
+    items = fetch_feed("https://bad.example.com/")
     assert items == []
 
 
 def test_parse_entry_uses_entry_id_as_stable_id():
     entry = MagicMock()
-    entry.id = "tag:example.com,2026:1"
-    entry.link = "https://example.com/1"
-    entry.title = "Title"
-    entry.summary = ""
-    entry.published_parsed = None
-    entry.updated_parsed = None
-    source = {"name": "Feed", "type": "rss", "url": "https://example.com/feed", "category": "tech"}
+    entry.get.side_effect = lambda k, default="": {
+        "id": "tag:example.com,2026:1",
+        "link": "https://example.com/1",
+        "title": "Title",
+        "summary": "",
+    }.get(k, default)
 
-    item = _parse_entry(entry, source)
+    item = _parse_entry(entry)
 
     assert item.id == "tag:example.com,2026:1"
 
 
 def test_parse_entry_falls_back_to_link_when_no_id():
-    entry = MagicMock(spec=[])
-    entry.link = "https://example.com/no-id"
-    entry.title = "No ID Entry"
-    entry.summary = ""
-    entry.published_parsed = None
-    entry.updated_parsed = None
-    source = {"name": "Feed", "type": "rss", "url": "https://example.com/feed", "category": "tech"}
+    entry = MagicMock()
+    entry.get.side_effect = lambda k, default="": {
+        "link": "https://example.com/no-id",
+        "title": "No ID Entry",
+        "summary": "",
+    }.get(k, default)
 
-    item = _parse_entry(entry, source)
+    item = _parse_entry(entry)
 
     assert item.id == "https://example.com/no-id"
 
 
 def test_parse_entry_published_at_is_none_when_no_date():
     entry = MagicMock()
-    entry.id = "https://example.com/no-date"
-    entry.link = "https://example.com/no-date"
-    entry.title = "No Date"
-    entry.summary = ""
-    entry.published_parsed = None
-    entry.updated_parsed = None
-    source = {"name": "Feed", "type": "rss", "url": "https://example.com/feed", "category": "tech"}
+    entry.get.side_effect = lambda k, default="": {
+        "id": "https://example.com/no-date",
+        "link": "https://example.com/no-date",
+        "title": "No Date",
+        "summary": "",
+    }.get(k, default)
 
-    item = _parse_entry(entry, source)
+    item = _parse_entry(entry)
 
     assert item.published_at is None
 
 
 def test_fetch_all_sources_combines_feeds(mocker, sample_items):
-    mocker.patch("dailydrop.fetch.load_sources", return_value=[
-        {"name": "A", "type": "rss", "url": "https://a.example.com/", "category": "tech"},
-        {"name": "B", "type": "rss", "url": "https://b.example.com/", "category": "blog"},
-    ])
     mocker.patch(
         "dailydrop.fetch.fetch_feed",
         side_effect=[sample_items[:2], sample_items[2:]],
     )
 
-    items = fetch_all_sources()
+    items = fetch_all_sources(["https://a.example.com/", "https://b.example.com/"])
 
     assert len(items) == 3
 
 
 def test_fetch_all_sources_sorted_newest_first(mocker, sample_items):
     # sample_items are already sorted oldest→newest; fetch_all_sources should reverse
-    mocker.patch("dailydrop.fetch.load_sources", return_value=[
-        {"name": "Feed", "type": "rss", "url": "https://feed.example.com/", "category": "tech"},
-    ])
     mocker.patch("dailydrop.fetch.fetch_feed", return_value=sample_items)
 
-    items = fetch_all_sources()
+    items = fetch_all_sources(["https://feed.example.com/"])
 
     dates = [i.published_at for i in items if i.published_at]
     assert dates == sorted(dates, reverse=True)

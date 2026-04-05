@@ -26,12 +26,12 @@ class Item:
     """
 
     id: str
-    source_type: str
-    source_name: str
     title: str
     url: str
     published_at: datetime.datetime | None
     description: str = ""
+    source_type: str = ""
+    source_name: str = ""
 
 
 @dataclass

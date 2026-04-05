@@ -30,25 +30,21 @@ def load_sources(path: Path | None = None) -> list[dict]:
     return data.get("sources", [])
 
 
-def _parse_entry(entry: feedparser.FeedParserDict, source: dict) -> Item:
+def _parse_entry(entry: feedparser.FeedParserDict) -> Item:
     """Convert a single feedparser entry to an ``Item``.
 
     Derives a stable ``id`` from ``entry.id`` if present, otherwise from
-    ``entry.link``.  Parses ``published_parsed`` or ``updated_parsed`` for
-    the timestamp.
+    ``entry.link``.  Parses ``published_parsed`` for the timestamp.
 
     Args:
         entry: A feedparser entry dict.
-        source: The source dict this entry came from.
 
     Returns:
         A populated ``Item`` dataclass.
     """
     ts = entry.get("published_parsed")
     return Item(
-        id=entry.get("id", ""),
-        source_type=source.get("type", "rss"),
-        source_name=source.get("name", ""),
+        id=entry.get("id") or entry.get("link", ""),
         title=entry.get("title", ""),
         url=entry.get("link", ""),
         published_at=datetime.datetime(*ts[:6], tzinfo=datetime.timezone.utc) if ts else None,
@@ -56,25 +52,24 @@ def _parse_entry(entry: feedparser.FeedParserDict, source: dict) -> Item:
     )
 
 
-def fetch_feed(source: dict) -> list[Item]:
+def fetch_feed(url: str) -> list[Item]:
     """Fetch a single RSS/Atom feed and return a list of Items.
 
     Never raises — on parse failure, logs a warning and returns an empty list.
 
     Args:
-        source: A source dict loaded from ``sources.yaml``.
+        url: URL of the RSS/Atom feed.
 
     Returns:
         List of ``Item`` objects parsed from the feed.
     """
-    url = source.get("url", "")
     try:
         feed = feedparser.parse(url)
         if feed.bozo and not feed.entries:
             raise feed.bozo_exception
-        return [_parse_entry(entry, source) for entry in feed.entries]
+        return [_parse_entry(entry) for entry in feed.entries]
     except Exception as exc:
-        logger.warning("Failed to fetch feed %r (%s): %s", source.get("name"), url, exc)
+        logger.warning("Failed to fetch feed %r: %s", url, exc)
         return []
 
 
@@ -101,17 +96,23 @@ def filter_recent(
     return [item for item in items if item.published_at is not None and item.published_at >= cutoff]
 
 
-def fetch_all_sources(sources: list[dict] | None = None) -> list[Item]:
+def fetch_all_sources(urls: list[str] | None = None) -> list[Item]:
     """Fetch all configured sources and return the combined item list.
 
     Args:
-        sources: Override source list.  Defaults to ``load_sources()``.
+        urls: Override list of feed URLs.  Defaults to URLs from ``load_sources()``.
 
     Returns:
         Flat list of ``Item`` objects from all sources, sorted by
         ``published_at`` descending (newest first, ``None`` dates last).
     """
-    ...
+    if urls is None:
+        urls = [s["url"] for s in load_sources()]
+    items = []
+    for url in urls:
+        items.extend(fetch_feed(url))
+    items.sort(key=lambda item: item.published_at or datetime.datetime.min.replace(tzinfo=datetime.timezone.utc), reverse=True)
+    return items
 
 
 
