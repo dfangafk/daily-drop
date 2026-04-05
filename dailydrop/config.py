@@ -28,14 +28,12 @@ class PipelineSettings(BaseModel):
     """Pipeline run configuration."""
 
     log_level: str = "INFO"
-    save_logs: bool = True
 
 
 class PathSettings(BaseModel):
     """Filesystem paths for the pipeline."""
 
     sources_yaml: Path = BASE_DIR / "config" / "sources.yaml"
-    logs_output_dir: Path = BASE_DIR / "data" / "logs"
     templates_dir: Path = BASE_DIR / "dailydrop" / "templates"
 
 

@@ -14,21 +14,10 @@ logging.basicConfig(level=_log_level, format=_LOG_FORMAT)
 logger = logging.getLogger(__name__)
 
 
-def _add_file_handler(run_date: datetime.date) -> None:
-    """Attach a date-stamped FileHandler to the root logger."""
-    settings.paths.logs_output_dir.mkdir(parents=True, exist_ok=True)
-    log_file = settings.paths.logs_output_dir / f"{run_date.isoformat()}.log"
-    file_handler = logging.FileHandler(log_file, encoding="utf-8")
-    file_handler.setFormatter(logging.Formatter(_LOG_FORMAT))
-    logging.getLogger().addHandler(file_handler)
-
-
 def main() -> None:
     """Run the fetch stage of the pipeline."""
     t0 = datetime.datetime.now(datetime.UTC)
     run_date = t0.date()
-    if settings.pipeline.save_logs:
-        _add_file_handler(run_date)
     logger.info("Pipeline start — run date: %s", run_date)
 
     try:
