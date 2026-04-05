@@ -3,8 +3,6 @@
 import argparse
 import datetime
 import logging
-import sys
-
 from dailydrop.config import settings
 from dailydrop.fetch import fetch_all_sources, filter_recent_items
 from dailydrop.normalize import normalize_items
@@ -50,12 +48,8 @@ def main() -> None:
     run_date = reference_time.date()
     logger.info("Pipeline start — run date: %s, reference time: %s, look-back: %d hours", run_date, reference_time.isoformat(), args.hours)
 
-    try:
-        all_items = fetch_all_sources()
-        logger.info("Fetched %d total items across all sources", len(all_items))
-    except Exception:
-        logger.exception("Fetch failed")
-        sys.exit(1)
+    all_items = fetch_all_sources()
+    logger.info("Fetched %d total items across all sources", len(all_items))
 
     recent_items = filter_recent_items(all_items, hours=args.hours, reference_time=reference_time)
     logger.info(
