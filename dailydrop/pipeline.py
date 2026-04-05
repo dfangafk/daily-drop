@@ -30,6 +30,11 @@ def _parse_args() -> argparse.Namespace:
         metavar="DATETIME",
         help="Reference time in ISO 8601 format (default: now). E.g. 2026-04-04T08:00:00",
     )
+    parser.add_argument(
+        "--no-email",
+        action="store_true",
+        help="Skip sending the notification email.",
+    )
     return parser.parse_args()
 
 
@@ -73,7 +78,10 @@ def main() -> None:
     # TODO: pass recent_items through an LLM enrichment/ranking step before
     #       notify/persist stages (e.g. score relevance, extract tags, summarise).
 
-    send_notification(t0, recent_items)
+    if args.no_email:
+        logger.info("Skipping email notification")
+    else:
+        send_notification(t0, recent_items)
 
     elapsed = (datetime.datetime.now(datetime.UTC) - t0).total_seconds()
     logger.info("Pipeline complete in %.1f seconds", elapsed)
