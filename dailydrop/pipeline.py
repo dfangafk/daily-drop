@@ -84,9 +84,6 @@ def main() -> None:
             item.source_url,
         )
 
-    # TODO: pass recent_items through an LLM enrichment/ranking step before
-    #       notify/persist stages (e.g. score relevance, extract tags, summarise).
-
     if args.no_email:
         logger.info("Skipping email notification")
     else:
