@@ -13,7 +13,7 @@ from dailydrop.models import Item
 logger = logging.getLogger(__name__)
 
 
-def load_sources(path: Path | None = None) -> list[dict]:
+def _load_sources(path: Path | None = None) -> list[dict]:
     """Load and return the list of source dicts from sources.yaml.
 
     Args:
@@ -29,7 +29,7 @@ def load_sources(path: Path | None = None) -> list[dict]:
     return data.get("sources", [])
 
 
-def fetch_feed(url: str) -> list[Item]:
+def _fetch_feed(url: str) -> list[Item]:
     """Fetch a single RSS/Atom feed and return a list of Items.
 
     Never raises — on parse failure, logs a warning and returns an empty list.
@@ -66,7 +66,7 @@ def fetch_feed(url: str) -> list[Item]:
         return []
 
 
-def fetch_page(url: str) -> list[Item]:
+def _fetch_page(url: str) -> list[Item]:
     """Fetch a single web page and return a list of Items.
 
     Not yet implemented.
@@ -92,10 +92,10 @@ def fetch_all_feeds(urls: list[str] | None = None) -> list[Item]:
     """
     if urls is None:
         # TODO: handle non-RSS/Atom sources via fetch_page
-        urls = [s["url"] for s in load_sources()]
+        urls = [s["url"] for s in _load_sources()]
     items = []
     for url in urls:
-        items.extend(fetch_feed(url))
+        items.extend(_fetch_feed(url))
     items.sort(key=lambda item: item.published_at or datetime.datetime.min.replace(tzinfo=datetime.timezone.utc), reverse=True)
     return items
 
