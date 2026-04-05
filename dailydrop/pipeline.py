@@ -38,7 +38,7 @@ def _parse_args() -> argparse.Namespace:
 
 
 def main() -> None:
-    """Run the fetch stage of the pipeline."""
+    """Run the full pipeline: fetch → filter → normalize → notify."""
     args = _parse_args()
     pipeline_start = datetime.datetime.now(datetime.UTC)
     if args.reference_time is not None:
@@ -48,45 +48,49 @@ def main() -> None:
     run_date = reference_time.date()
     logger.info("Pipeline start — run date: %s, reference time: %s, look-back: %d hours", run_date, reference_time.isoformat(), args.hours)
 
-    all_items = fetch_all_sources()
-    logger.info("Fetched %d total items across all sources", len(all_items))
+    try:
+        all_items = fetch_all_sources()
+        logger.info("Fetched %d total items across all sources", len(all_items))
 
-    recent_items = filter_recent_items(all_items, hours=args.hours, reference_time=reference_time)
-    logger.info(
-        "Filtered to %d items within the last %d hours (%d excluded)",
-        len(recent_items),
-        args.hours,
-        len(all_items) - len(recent_items),
-    )
-    normalize_items(recent_items)
-    logger.info("Normalization complete")
-    for item in recent_items:
-        logger.debug(
-            "\n  id:           %s"
-            "\n  title:        %s"
-            "\n  description:  %s"
-            "\n  url:          %s"
-            "\n  published_at: %s"
-            "\n  source_name:  %s"
-            "\n  source_url:   %s",
-            item.id,
-            item.title,
-            item.description[:120] + "…" if len(item.description) > 120 else item.description,
-            item.url,
-            item.published_at,
-            item.source_name,
-            item.source_url,
+        recent_items = filter_recent_items(all_items, hours=args.hours, reference_time=reference_time)
+        logger.info(
+            "Filtered to %d items within the last %d hours (%d excluded)",
+            len(recent_items),
+            args.hours,
+            len(all_items) - len(recent_items),
         )
+        normalize_items(recent_items)
+        logger.info("Normalization complete")
+        for item in recent_items:
+            logger.debug(
+                "\n  id:           %s"
+                "\n  title:        %s"
+                "\n  description:  %s"
+                "\n  url:          %s"
+                "\n  published_at: %s"
+                "\n  source_name:  %s"
+                "\n  source_url:   %s",
+                item.id,
+                item.title,
+                item.description[:120] + "…" if len(item.description) > 120 else item.description,
+                item.url,
+                item.published_at,
+                item.source_name,
+                item.source_url,
+            )
 
-    if args.no_email:
-        logger.info("Skipping email notification")
-    else:
-        logger.info("Sending email notification for %d items", len(recent_items))
-        send_notification(reference_time, recent_items)
+        if args.no_email:
+            logger.info("Skipping email notification")
+        else:
+            logger.info("Sending email notification for %d items", len(recent_items))
+            send_notification(reference_time, recent_items)
 
-    pipeline_end = datetime.datetime.now(datetime.UTC)
-    elapsed = (pipeline_end - pipeline_start).total_seconds()
-    logger.info("Pipeline complete in %.1f seconds", elapsed)
+        elapsed = (datetime.datetime.now(datetime.UTC) - pipeline_start).total_seconds()
+        logger.info("Pipeline completed in %.1f seconds", elapsed)
+    except Exception:
+        elapsed = (datetime.datetime.now(datetime.UTC) - pipeline_start).total_seconds()
+        logger.exception("Pipeline failed after %.1f seconds", elapsed)
+        raise
 
 
 if __name__ == "__main__":

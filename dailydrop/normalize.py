@@ -2,11 +2,14 @@
 
 import datetime
 import html
+import logging
 import re
 from zoneinfo import ZoneInfo
 
 from dailydrop.config import settings
 from dailydrop.models import Item
+
+logger = logging.getLogger(__name__)
 
 
 def _normalize_description(raw: str, max_chars: int = 300) -> str:
