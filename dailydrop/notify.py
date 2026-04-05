@@ -58,9 +58,9 @@ def send_notification(
     msg.attach(MIMEText(html_body, "html"))
 
     try:
-        smtp_host, smtp_port, use_ssl = resolve_smtp(settings.notify, settings.sender_email)
+        smtp_host, smtp_port, smtp_security = resolve_smtp(settings.notify, settings.sender_email)
         context = ssl.create_default_context()
-        if use_ssl:
+        if smtp_security == "ssl":
             conn = smtplib.SMTP_SSL(smtp_host, smtp_port, context=context)
         else:
             conn = smtplib.SMTP(smtp_host, smtp_port)

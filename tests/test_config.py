@@ -55,46 +55,46 @@ def test_sender_email_override_via_env(monkeypatch):
 
 def test_resolve_smtp_gmail_domain():
     notify = NotifySettings()
-    host, port, use_ssl = resolve_smtp(notify, "user@gmail.com")
+    host, port, smtp_security = resolve_smtp(notify, "user@gmail.com")
     assert host == "smtp.gmail.com"
     assert port == 465
-    assert use_ssl is True
+    assert smtp_security == "ssl"
 
 
 def test_resolve_smtp_googlemail_domain():
     notify = NotifySettings()
-    host, port, use_ssl = resolve_smtp(notify, "user@googlemail.com")
+    host, port, smtp_security = resolve_smtp(notify, "user@googlemail.com")
     assert host == "smtp.gmail.com"
 
 
 def test_resolve_smtp_outlook_domain():
     notify = NotifySettings()
-    host, port, use_ssl = resolve_smtp(notify, "user@outlook.com")
+    host, port, smtp_security = resolve_smtp(notify, "user@outlook.com")
     assert host == "smtp-mail.outlook.com"
     assert port == 587
-    assert use_ssl is False
+    assert smtp_security == "starttls"
 
 
 def test_resolve_smtp_hotmail_domain():
     notify = NotifySettings()
-    host, port, use_ssl = resolve_smtp(notify, "user@hotmail.com")
+    host, port, smtp_security = resolve_smtp(notify, "user@hotmail.com")
     assert host == "smtp-mail.outlook.com"
 
 
 def test_resolve_smtp_manual_host_port_override_non465():
     notify = NotifySettings(smtp_host="smtp.corp.example.com", smtp_port=2525)
-    host, port, use_ssl = resolve_smtp(notify, "user@corp.example.com")
+    host, port, smtp_security = resolve_smtp(notify, "user@corp.example.com")
     assert host == "smtp.corp.example.com"
     assert port == 2525
-    assert use_ssl is False
+    assert smtp_security == "starttls"
 
 
 def test_resolve_smtp_manual_host_port_override_465():
     notify = NotifySettings(smtp_host="smtp.corp.example.com", smtp_port=465)
-    host, port, use_ssl = resolve_smtp(notify, "user@corp.example.com")
+    host, port, smtp_security = resolve_smtp(notify, "user@corp.example.com")
     assert host == "smtp.corp.example.com"
     assert port == 465
-    assert use_ssl is True
+    assert smtp_security == "ssl"
 
 
 def test_resolve_smtp_unknown_domain_raises():
