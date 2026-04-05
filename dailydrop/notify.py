@@ -1,11 +1,9 @@
 """Email notification: send daily digest after pipeline completes."""
 
 import datetime
-import functools
 import logging
 import smtplib
 import ssl
-from collections.abc import Callable
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from zoneinfo import ZoneInfo
@@ -15,27 +13,7 @@ from jinja2 import Environment, FileSystemLoader
 from dailydrop.config import settings
 from dailydrop.models import Item
 
-NotifyFn = Callable[[datetime.datetime, list[Item], "dict | None"], None]
-
 logger = logging.getLogger(__name__)
-
-
-def _to_display_time(dt: datetime.datetime | None) -> str:
-    """Format a UTC-aware datetime for display in the configured timezone.
-
-    Returns an empty string if ``dt`` is ``None``.
-    """
-    if dt is None:
-        return ""
-    tz = ZoneInfo(settings.notify.timezone)
-    local = dt.astimezone(tz)
-    return f"{local.strftime('%b')} {local.day}, {local.year}, {local.hour % 12 or 12}:{local.strftime('%M')} {'AM' if local.hour < 12 else 'PM'}"
-
-
-@functools.lru_cache(maxsize=2)
-def _get_jinja_env(templates_dir: str, autoescape: bool) -> Environment:
-    """Return a cached Jinja2 Environment for the given directory."""
-    return Environment(loader=FileSystemLoader(templates_dir), autoescape=autoescape)
 
 
 def send_notification(
@@ -62,9 +40,9 @@ def send_notification(
     item_count = len(new_items)
 
     subject = settings.notify.subject_template.format(date=date_str, count=item_count)
-    ctx = build_template_context(date_str, new_items, rank_result)
-    text_body = render_text(ctx)
-    html_body = render_html(ctx)
+    ctx = ...  # TODO: build template context
+    text_body = Environment(loader=FileSystemLoader(str(settings.paths.templates_dir)), autoescape=False).get_template("digest.txt.jinja2").render(**ctx)
+    html_body = Environment(loader=FileSystemLoader(str(settings.paths.templates_dir)), autoescape=True).get_template("digest.html.jinja2").render(**ctx)
 
     msg = MIMEMultipart("alternative")
     msg["From"] = settings.sender_gmail
@@ -85,31 +63,3 @@ def send_notification(
         logger.warning("Failed to send notification email", exc_info=True)
 
 
-def build_template_context(
-    date_str: str,
-    new_items: list[Item],
-    rank_result: dict | None,
-) -> dict:
-    """Assemble the context dict passed to both Jinja2 email templates.
-
-    Args:
-        date_str: ISO date string for the run (display purposes).
-        new_items: All new items fetched this run.
-        rank_result: LLM-ranked picks, or ``None``.
-
-    Returns:
-        Context dict with ``date``, ``picks``, ``all_items``, and ``summary``.
-    """
-    ...
-
-
-def render_text(ctx: dict) -> str:
-    """Render the plain-text email template with the given context."""
-    env = _get_jinja_env(str(settings.paths.templates_dir), autoescape=False)
-    return env.get_template("digest.txt.jinja2").render(**ctx)
-
-
-def render_html(ctx: dict) -> str:
-    """Render the HTML email template with the given context."""
-    env = _get_jinja_env(str(settings.paths.templates_dir), autoescape=True)
-    return env.get_template("digest.html.jinja2").render(**ctx)
