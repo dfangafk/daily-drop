@@ -5,55 +5,55 @@ import datetime
 import pytest
 
 from dailydrop.models import Item
-from dailydrop.normalize import normalize_description, normalize_items, normalize_published_at
+from dailydrop.normalize import _normalize_description, _normalize_published_at, normalize_items
 
 
 # ---------------------------------------------------------------------------
-# normalize_description
+# _normalize_description
 # ---------------------------------------------------------------------------
 
 
 def test_normalize_description_strips_html():
-    assert normalize_description("<p>Hello <b>world</b></p>") == "Hello world"
+    assert _normalize_description("<p>Hello <b>world</b></p>") == "Hello world"
 
 
 def test_normalize_description_unescapes_entities():
-    assert normalize_description("AT&amp;T &mdash; &lt;tech&gt;") == "AT&T — <tech>"
+    assert _normalize_description("AT&amp;T &mdash; &lt;tech&gt;") == "AT&T — <tech>"
 
 
 def test_normalize_description_collapses_whitespace():
-    assert normalize_description("  too   many   spaces  ") == "too many spaces"
+    assert _normalize_description("  too   many   spaces  ") == "too many spaces"
 
 
 def test_normalize_description_truncates_at_word_boundary():
     raw = "one two three four five"
-    result = normalize_description(raw, max_chars=12)
+    result = _normalize_description(raw, max_chars=12)
     assert result.endswith("…")
     assert len(result) <= 13  # 12 chars + ellipsis
 
 
 def test_normalize_description_no_truncation_when_short():
     raw = "short"
-    assert normalize_description(raw, max_chars=300) == "short"
+    assert _normalize_description(raw, max_chars=300) == "short"
 
 
 def test_normalize_description_empty_string():
-    assert normalize_description("") == ""
+    assert _normalize_description("") == ""
 
 
 # ---------------------------------------------------------------------------
-# normalize_published_at
+# _normalize_published_at
 # ---------------------------------------------------------------------------
 
 
 def test_normalize_published_at_none_returns_none():
-    assert normalize_published_at(None) is None
+    assert _normalize_published_at(None) is None
 
 
 def test_normalize_published_at_converts_timezone(mocker):
     mocker.patch("dailydrop.normalize.settings.notify.timezone", "America/New_York")
     utc_dt = datetime.datetime(2026, 4, 5, 12, 0, tzinfo=datetime.timezone.utc)
-    result = normalize_published_at(utc_dt)
+    result = _normalize_published_at(utc_dt)
     assert result.tzname() == "EDT"
     assert result.hour == 8  # UTC-4 during EDT
 
@@ -61,7 +61,7 @@ def test_normalize_published_at_converts_timezone(mocker):
 def test_normalize_published_at_preserves_instant(mocker):
     mocker.patch("dailydrop.normalize.settings.notify.timezone", "America/Los_Angeles")
     utc_dt = datetime.datetime(2026, 4, 5, 12, 0, tzinfo=datetime.timezone.utc)
-    result = normalize_published_at(utc_dt)
+    result = _normalize_published_at(utc_dt)
     assert result.utctimetuple()[:6] == utc_dt.utctimetuple()[:6]
 
 

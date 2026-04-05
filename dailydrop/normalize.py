@@ -9,7 +9,7 @@ from dailydrop.config import settings
 from dailydrop.models import Item
 
 
-def normalize_description(raw: str, max_chars: int = 300) -> str:
+def _normalize_description(raw: str, max_chars: int = 300) -> str:
     """Strip HTML tags, unescape entities, collapse whitespace, and truncate.
 
     Args:
@@ -28,7 +28,7 @@ def normalize_description(raw: str, max_chars: int = 300) -> str:
     return text
 
 
-def normalize_published_at(
+def _normalize_published_at(
     dt: datetime.datetime | None,
 ) -> datetime.datetime | None:
     """Convert a UTC datetime to the configured notification timezone.
@@ -55,6 +55,6 @@ def normalize_items(items: list[Item]) -> list[Item]:
         The same list with fields normalized.
     """
     for item in items:
-        item.description = normalize_description(item.description)
-        item.published_at = normalize_published_at(item.published_at)
+        item.description = _normalize_description(item.description)
+        item.published_at = _normalize_published_at(item.published_at)
     return items
