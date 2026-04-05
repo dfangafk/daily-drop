@@ -1,21 +1,18 @@
 sources:
-  - name: "Lex Fridman Podcast"
-    type: rss
-    url: "https://lexfridman.com/feed/podcast/"
-    category: "podcasts"
+  # - name: "Lex Fridman Podcast"
+  #   type: rss
+  #   url: "https://lexfridman.com/feed/podcast/"
+  #   category: "podcasts"
 
-  - name: "Hacker News"
-    type: rss
-    url: "https://news.ycombinator.com/rss"
-    category: "tech"
+  # - name: "Hacker News"
+  #   type: rss
+  #   url: "https://news.ycombinator.com/rss"
+  #   category: "tech"
 
   - name: "OpenAI News"
     type: rss
     url: "https://openai.com/news/rss.xml"
-    category: "ai"
 
-  # YouTube channel example (replace CHANNEL_ID with real ID):
-  # - name: "Y Combinator"
-  #   type: rss
-  #   url: "https://www.youtube.com/feeds/videos.xml?channel_id=UCcefcZRL2oaA_uBNeo5UOWg"
-  #   category: "startups"
+  - name: "Y Combinator"
+    type: rss
+    url: "https://www.youtube.com/feeds/videos.xml?channel_id=UCcefcZRL2oaA_uBNeo5UOWg"

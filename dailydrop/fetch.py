@@ -21,8 +21,7 @@ def load_sources(path: Path | None = None) -> list[dict]:
             ``settings.paths.sources_yaml``.
 
     Returns:
-        List of raw source dicts, each with ``name``, ``type``, ``url``,
-        and ``category`` keys.
+        List of raw source dicts, each with ``name``, ``type``, and ``url`` keys.
     """
     resolved = path or settings.paths.sources_yaml
     with open(resolved) as f:
