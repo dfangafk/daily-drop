@@ -2,6 +2,7 @@
 
 import datetime
 import logging
+import re
 from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
@@ -32,3 +33,9 @@ class Item:
     description: str = ""
     source_name: str = ""
     source_url: str = ""
+
+    @property
+    def youtube_id(self) -> str | None:
+        """Return the YouTube video ID if this item links to a YouTube video."""
+        m = re.search(r'(?:youtube\.com/watch\?(?:.*&)?v=|youtu\.be/)([A-Za-z0-9_-]{11})', self.url)
+        return m.group(1) if m else None
