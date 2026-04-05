@@ -6,6 +6,7 @@ from pathlib import Path
 
 import feedparser
 import yaml
+from zoneinfo import ZoneInfo
 
 from dailydrop.config import settings
 from dailydrop.models import Item
@@ -51,7 +52,7 @@ def fetch_feed(url: str) -> list[Item]:
                 id=entry.get("id") or entry.get("link", ""),
                 title=entry.get("title", ""),
                 url=entry.get("link", ""),
-                published_at=datetime.datetime(*ts[:6], tzinfo=datetime.timezone.utc)
+                published_at=datetime.datetime(*ts[:6], tzinfo=datetime.timezone.utc).astimezone(ZoneInfo(settings.notify.timezone))
                 if (ts := entry.get("published_parsed"))
                 else None,
                 description=entry.get("summary", ""),
