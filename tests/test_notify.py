@@ -6,7 +6,6 @@ import smtplib
 import pytest
 
 import dailydrop.notify as notify_module
-from dailydrop.models import RankResult
 from dailydrop.notify import build_template_context, send_notification
 
 
@@ -70,11 +69,11 @@ def test_build_template_context_no_rank_result(sample_items):
 
 
 def test_build_template_context_with_rank_result(sample_items):
-    rank = RankResult(
-        picks=[sample_items[0].id],
-        rationale={sample_items[0].id: "Great AI article."},
-        summary="Today's top pick is about AI.",
-    )
+    rank = {
+        "picks": [sample_items[0].id],
+        "rationale": {sample_items[0].id: "Great AI article."},
+        "summary": "Today's top pick is about AI.",
+    }
     ctx = build_template_context("2026-04-01", sample_items, rank)
 
     assert ctx["summary"] == "Today's top pick is about AI."

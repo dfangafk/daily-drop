@@ -13,9 +13,9 @@ from zoneinfo import ZoneInfo
 from jinja2 import Environment, FileSystemLoader
 
 from dailydrop.config import settings
-from dailydrop.models import Item, RankResult
+from dailydrop.models import Item
 
-NotifyFn = Callable[[datetime.datetime, list[Item], "RankResult | None"], None]
+NotifyFn = Callable[[datetime.datetime, list[Item], "dict | None"], None]
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +41,7 @@ def _get_jinja_env(templates_dir: str, autoescape: bool) -> Environment:
 def send_notification(
     reference_time: datetime.datetime,
     new_items: list[Item],
-    rank_result: RankResult | None,
+    rank_result: dict | None,
 ) -> None:
     """Send daily digest email after pipeline completion.
 
@@ -88,7 +88,7 @@ def send_notification(
 def build_template_context(
     date_str: str,
     new_items: list[Item],
-    rank_result: RankResult | None,
+    rank_result: dict | None,
 ) -> dict:
     """Assemble the context dict passed to both Jinja2 email templates.
 

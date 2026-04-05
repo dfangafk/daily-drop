@@ -1,4 +1,4 @@
-"""Orchestrator: fetch → rank → notify → persist."""
+"""Orchestrator: fetch → filter → notify → persist."""
 
 import datetime
 import logging

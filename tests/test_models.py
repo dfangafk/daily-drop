@@ -1,10 +1,8 @@
-"""Tests for dailydrop.models — Item and RankResult construction."""
+"""Tests for dailydrop.models — Item construction."""
 
 import datetime
 
-import pytest
-
-from dailydrop.models import Item, RankResult
+from dailydrop.models import Item
 
 
 def test_item_construction():
@@ -32,18 +30,3 @@ def test_item_none_published_at():
     assert item.published_at is None
 
 
-def test_rank_result_defaults():
-    result = RankResult()
-    assert result.picks == []
-    assert result.rationale == {}
-    assert result.summary == ""
-
-
-def test_rank_result_construction():
-    result = RankResult(
-        picks=["id1", "id2"],
-        rationale={"id1": "Relevant to AI.", "id2": "About startups."},
-        summary="Today's top picks focus on AI and startups.",
-    )
-    assert len(result.picks) == 2
-    assert result.rationale["id1"] == "Relevant to AI."
