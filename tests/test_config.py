@@ -1,69 +1,36 @@
 """Tests for dailydrop.config — settings loading and env var overrides."""
 
-import pytest
-
-import dailydrop.config as cfg
 from dailydrop.config import Settings
-
-
-def test_settings_fetch_defaults():
-    s = Settings()
-    assert s.fetch.timeout == 30
-    assert "dailydrop" in s.fetch.user_agent
 
 
 def test_settings_notify_defaults():
     s = Settings()
     assert s.notify.smtp_host == "smtp.gmail.com"
     assert s.notify.smtp_port == 465
+    assert s.notify.timezone == "America/New_York"
     assert "{date}" in s.notify.subject_template
     assert "{count}" in s.notify.subject_template
 
 
-def test_settings_llm_defaults():
-    s = Settings()
-    assert s.llm.provider == "auto"
-    assert isinstance(s.llm.models, list)
-    assert len(s.llm.models) > 0
-    assert s.llm.top_n == 5
-
-
 def test_settings_pipeline_defaults():
     s = Settings()
-    assert s.pipeline.enable_llm is True
-    assert s.pipeline.enable_notify is True
-    assert s.pipeline.save_logs is True
+    assert s.pipeline.log_level == "INFO"
 
 
-def test_settings_secrets_default_empty():
+def test_settings_paths_default_to_base_dir():
     s = Settings()
-    assert s.gemini_api_key == ""
+    assert s.paths.sources_yaml.name == "sources.yaml"
+    assert s.paths.templates_dir.name == "templates"
+
+
+def test_settings_secrets_default_empty(monkeypatch):
+    monkeypatch.delenv("SENDER_GMAIL", raising=False)
+    monkeypatch.delenv("GMAIL_APP_PASSWORD", raising=False)
+    monkeypatch.delenv("RECEIVER_EMAIL", raising=False)
+    s = Settings(_env_file=None)
     assert s.sender_gmail == ""
+    assert s.gmail_app_password == ""
     assert s.receiver_email == ""
-
-
-def test_pipeline_override_via_env(monkeypatch):
-    monkeypatch.setenv("PIPELINE__ENABLE_LLM", "false")
-    s = Settings()
-    assert s.pipeline.enable_llm is False
-
-
-def test_llm_provider_override_via_env(monkeypatch):
-    monkeypatch.setenv("LLM__PROVIDER", "api")
-    s = Settings()
-    assert s.llm.provider == "api"
-
-
-def test_llm_top_n_override_via_env(monkeypatch):
-    monkeypatch.setenv("LLM__TOP_N", "10")
-    s = Settings()
-    assert s.llm.top_n == 10
-
-
-def test_fetch_timeout_override_via_env(monkeypatch):
-    monkeypatch.setenv("FETCH__TIMEOUT", "60")
-    s = Settings()
-    assert s.fetch.timeout == 60
 
 
 def test_notify_smtp_port_override_via_env(monkeypatch):
@@ -72,14 +39,13 @@ def test_notify_smtp_port_override_via_env(monkeypatch):
     assert s.notify.smtp_port == 587
 
 
-def test_gemini_api_key_override_via_env(monkeypatch):
-    monkeypatch.setenv("GEMINI_API_KEY", "test-key-123")
+def test_pipeline_log_level_override_via_env(monkeypatch):
+    monkeypatch.setenv("PIPELINE__LOG_LEVEL", "DEBUG")
     s = Settings()
-    assert s.gemini_api_key == "test-key-123"
+    assert s.pipeline.log_level == "DEBUG"
 
 
-def test_paths_default_to_base_dir():
+def test_sender_gmail_override_via_env(monkeypatch):
+    monkeypatch.setenv("SENDER_GMAIL", "test@gmail.com")
     s = Settings()
-    assert s.paths.sources_yaml.name == "sources.yaml"
-    assert s.paths.interests_txt.name == "interests.txt"
-    assert s.paths.seen_json.name == "seen.json"
+    assert s.sender_gmail == "test@gmail.com"

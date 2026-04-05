@@ -2,7 +2,6 @@
 
 import json
 import subprocess
-from pathlib import Path
 
 import pytest
 
@@ -16,9 +15,12 @@ from dailydrop.llm import (
 )
 
 
-def _patch_llm_settings(mocker, provider, models):
-    mocker.patch.object(dailydrop.llm.settings.llm, "provider", provider)
-    mocker.patch.object(dailydrop.llm.settings.llm, "models", models)
+def _patch_llm_settings(mocker, provider, models, api_kwargs=None):
+    mock_settings = mocker.MagicMock()
+    mock_settings.llm.provider = provider
+    mock_settings.llm.models = models
+    mock_settings.llm.api_kwargs = api_kwargs or {}
+    mocker.patch.object(dailydrop.llm, "settings", mock_settings)
 
 
 def test_build_complete_fn_returns_api_fn_when_models_set(mocker):
@@ -165,7 +167,7 @@ def test_call_codex_cli_raises_on_nonzero_returncode(mocker):
 
 
 def test_call_llm_api_success(mocker):
-    mocker.patch.object(dailydrop.llm.settings.llm, "models", ["gemini/gemini-2.5-flash"])
+    _patch_llm_settings(mocker, "api", ["gemini/gemini-2.5-flash"])
     mock_completion = mocker.patch("dailydrop.llm.completion")
     mock_completion.return_value = mocker.Mock(
         choices=[mocker.Mock(message=mocker.Mock(content='{"summary":"S","picks":[]}'))]
@@ -178,18 +180,17 @@ def test_call_llm_api_success(mocker):
         model="gemini/gemini-2.5-flash",
         messages=[{"role": "user", "content": "test prompt"}],
         response_format={"type": "json_object"},
-        num_retries=3,
     )
 
 
 def test_call_llm_api_raises_when_models_empty(mocker):
-    mocker.patch.object(dailydrop.llm.settings.llm, "models", [])
+    _patch_llm_settings(mocker, "api", [])
     with pytest.raises(RuntimeError, match="LLM_MODELS is required"):
         _call_llm_api("test prompt")
 
 
 def test_call_llm_api_falls_back_to_second_model(mocker):
-    mocker.patch.object(dailydrop.llm.settings.llm, "models", ["gemini/bad-model", "gemini/gemini-2.5-flash"])
+    _patch_llm_settings(mocker, "api", ["gemini/bad-model", "gemini/gemini-2.5-flash"])
     fallback = '{"summary":"fallback","picks":[]}'
     mock_completion = mocker.patch(
         "dailydrop.llm.completion",
@@ -206,7 +207,7 @@ def test_call_llm_api_falls_back_to_second_model(mocker):
 
 
 def test_call_llm_api_raises_when_all_models_fail(mocker):
-    mocker.patch.object(dailydrop.llm.settings.llm, "models", ["gemini/a", "gemini/b"])
+    _patch_llm_settings(mocker, "api", ["gemini/a", "gemini/b"])
     mocker.patch(
         "dailydrop.llm.completion",
         side_effect=[RuntimeError("a down"), RuntimeError("b down")],

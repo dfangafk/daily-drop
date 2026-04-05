@@ -9,7 +9,7 @@ description = "Daily content curation pipeline: RSS feeds → email digest"
 readme = "README.md"
 license = { text = "MIT" }
 authors = [
-    { name = "dfang" },
+    { name = "dfangafk" },
 ]
 requires-python = ">=3.12"
 keywords = ["rss", "curation", "pipeline", "newsletter"]

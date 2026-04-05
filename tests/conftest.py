@@ -7,12 +7,6 @@ import pytest
 from dailydrop.models import Item
 
 
-@pytest.fixture(autouse=True)
-def no_file_logging(mocker):
-    """Prevent pipeline tests from writing real log files to disk."""
-    mocker.patch("dailydrop.pipeline._add_file_handler")
-
-
 @pytest.fixture
 def sample_items() -> list[Item]:
     """Three minimal Items for use across test modules."""
