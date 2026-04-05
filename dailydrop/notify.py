@@ -10,7 +10,7 @@ from zoneinfo import ZoneInfo
 
 from jinja2 import Environment, FileSystemLoader
 
-from dailydrop.config import settings
+from dailydrop.config import resolve_smtp, settings
 from dailydrop.models import Item
 
 logger = logging.getLogger(__name__)
@@ -58,8 +58,14 @@ def send_notification(
     msg.attach(MIMEText(html_body, "html"))
 
     try:
+        smtp_host, smtp_port, use_ssl = resolve_smtp(settings.notify, settings.sender_email)
         context = ssl.create_default_context()
-        with smtplib.SMTP_SSL(settings.notify.smtp_host, settings.notify.smtp_port, context=context) as server:
+        if use_ssl:
+            conn = smtplib.SMTP_SSL(smtp_host, smtp_port, context=context)
+        else:
+            conn = smtplib.SMTP(smtp_host, smtp_port)
+            conn.starttls(context=context)
+        with conn as server:
             server.login(settings.sender_email, settings.smtp_password)
             server.send_message(msg)
         _email = settings.receiver_email
