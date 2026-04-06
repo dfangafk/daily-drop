@@ -88,6 +88,9 @@ Sources are listed in `sources.yaml` with `name` and `url` fields. Adding a new 
 ```
 
 Secrets required: `SENDER_EMAIL`, `SMTP_PASSWORD`, `RECEIVER_EMAIL`.
+Variables required: `SOURCES_YAML`.
+
+`sources.yaml` is not committed to the repository. The workflow writes it from the `SOURCES_YAML` variable at runtime. Use `scripts/sync_secrets.sh` to push local credentials and sources to GitHub in one step.
 
 ---
 

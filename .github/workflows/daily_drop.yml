@@ -43,6 +43,11 @@ jobs:
       - name: Install dependencies
         run: uv sync
 
+      - name: Write sources.yaml
+        run: echo "$SOURCES_YAML" > sources.yaml
+        env:
+          SOURCES_YAML: ${{ vars.SOURCES_YAML }}
+
       - name: Run pipeline
         run: uv run python -m dailydrop.pipeline
         env:

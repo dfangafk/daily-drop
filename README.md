@@ -83,11 +83,28 @@ Flags:
 
 The included workflow (`.github/workflows/daily_drop.yml`) runs the pipeline daily at 12:00 UTC (7 AM ET).
 
-Add these three secrets to your repository under **Settings → Secrets and variables → Actions**:
+You need to configure the following in your repository:
 
+**Secrets** (Settings → Secrets and variables → Actions → Secrets):
 - `SENDER_EMAIL`
 - `SMTP_PASSWORD`
 - `RECEIVER_EMAIL`
+
+**Variables** (Settings → Secrets and variables → Actions → Variables):
+- `SOURCES_YAML` — your full `sources.yaml` content
+
+**Option A — CLI (recommended):** use the included sync script, which reads your local `.env` and `sources.yaml` and sets everything automatically:
+
+```bash
+chmod +x scripts/sync_secrets.sh
+./scripts/sync_secrets.sh
+```
+
+Requires the [`gh` CLI](https://cli.github.com/) installed and authenticated (`gh auth login`). Re-run whenever your sources or credentials change.
+
+**Option B — GitHub UI:** go to your repository → **Settings → Secrets and variables → Actions** and add each entry manually.
+
+`sources.yaml` is not committed to the repository. The workflow writes it from the `SOURCES_YAML` variable at runtime.
 
 The workflow runs tests first and only sends the email if they pass. You can also trigger it manually from the Actions tab.
 
