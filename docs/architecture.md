@@ -1,26 +1,25 @@
 # Architecture
 
-A daily content curation pipeline that ingests content from multiple sources, uses an LLM to surface items matching the user's interests, and delivers a digest via email with a browsable HTML archive.
+A daily content curation pipeline that ingests RSS/Atom feeds, normalizes the results, and delivers a digest via email.
 
 ---
 
 ## High-Level Flow
 
 ```
-Sources (RSS/API)
+Sources (RSS/Atom feeds)
       │
       ▼
-  Fetcher Layer          ← one fetcher per source type
+  Fetcher                 ← feedparser; one call per configured URL
       │
       ▼
-  Deduplication          ← skip already-seen items (persisted state)
+  Time-window filter      ← keep items published within last N hours (default 24)
       │
       ▼
-  LLM Ranking            ← score/select items against user interest prompt
+  Normalize               ← strip HTML, unescape entities, convert to local timezone
       │
-      ├──► Daily Email   ← highlighted picks via Gmail SMTP
-      │
-      └──► HTML Archive  ← all new items, published to GitHub Pages
+      ▼
+  Daily Email             ← HTML + plain-text digest via SMTP
 ```
 
 ---
@@ -30,34 +29,48 @@ Sources (RSS/API)
 ### 1. Sources
 | Source | Method |
 |---|---|
-| YouTube channels | RSS (`/feeds/videos.xml`) |
-| Apple Podcasts / RSS feeds | RSS |
-| Tech company product blogs | RSS or HTML scrape |
+| YouTube channels | Atom |
+| Podcasts | RSS/Atom |
+| Tech company blogs | RSS/Atom |
 
-X (Twitter) is deferred. New sources can be added by implementing the fetcher interface.
+Sources are listed in `sources.yaml` with `name` and `url` fields. Adding a new feed requires only editing that file.
 
-### 2. Fetcher Layer
-- Each source has a small fetcher module that returns a normalized `Item` schema:
-  `{ id, source, title, url, published_at, description }`
-- Fetchers are configured via a YAML/JSON file listing source URLs and types.
+### 2. Fetcher (`dailydrop/fetch.py`)
+- `fetch_all_sources(urls)` — fetches all configured feeds in sequence, returns items sorted newest-first.
+- `filter_recent_items(items, hours, reference_time)` — drops items outside the lookback window.
+- Uses `feedparser` to handle both RSS and Atom formats.
+- Normalizes each entry into an `Item`:
+  `{ id, title, url, published_at, description, source_name, source_url }`
+- Feed errors are logged as warnings and skipped; they never fail the pipeline.
 
-### 3. Deduplication
-- A lightweight JSON state file tracks seen item IDs.
-- Persisted across runs via GitHub Actions cache or a file committed to a dedicated branch.
+### 3. Time-Window Filter
+- Items are included only if `published_at` falls within the configured lookback (default: 24 h).
+- No cross-run state file — each run fetches fresh and applies the time window.
 
-### 4. LLM Ranking
-- User defines their interests in a plain-text prompt (e.g., `interests.txt`).
-- New items are passed to the LLM with the interest prompt; it selects and ranks the top picks.
-- LLM provider is abstracted behind a simple interface — defaults to Gemini, swappable via config.
+### 4. Normalize (`dailydrop/normalize.py`)
+- `normalize_items(items)` modifies items in-place:
+  - **Description**: strips HTML tags, unescapes entities, collapses whitespace, truncates to 300 chars.
+  - **Timestamp**: converts UTC → configured local timezone (default `America/New_York`).
 
-### 5. Digest Email
-- Sends a daily HTML email via Gmail SMTP.
-- Top section: LLM-recommended picks with a brief reason for each.
-- Bottom section: link to the full HTML archive for that day.
+### 5. Digest Email (`dailydrop/notify.py`)
+- Sends HTML + plain-text email via SMTP.
+- **SMTP provider auto-detection**: infers host/port/security from the sender's domain.
+  Supported: Gmail, Outlook, Yahoo, iCloud, Fastmail.
+  Manual override via `NOTIFY__SMTP_HOST` + `NOTIFY__SMTP_PORT` env vars.
+- Port 465 → `SMTP_SSL`; ports 587/25/2525 → `SMTP` + STARTTLS.
+- **Templates** (Jinja2, in `dailydrop/templates/`):
+  - `drop.subject.jinja2` — "Daily Drop — YYYY-MM-DD (N new finds)"
+  - `drop.html.jinja2` — styled card layout; YouTube items include a thumbnail.
+  - `drop.txt.jinja2` — plain-text fallback.
+- Email credentials not set → notification skipped silently (pipeline still succeeds).
 
-### 6. HTML Archive
-- A static `index.html` is generated listing all new items grouped by source.
-- Published to GitHub Pages so it's browsable at a stable URL.
+### 6. Item Model (`dailydrop/models.py`)
+- `Item` dataclass.
+- `youtube_id` property — extracts YouTube video ID from the URL via regex; used by the HTML template for thumbnail embedding.
+
+### 7. Config (`dailydrop/config.py`)
+- Pydantic-settings backed by environment variables and an optional `.env` file.
+- Key settings: `SENDER_EMAIL`, `SMTP_PASSWORD`, `RECEIVER_EMAIL`, `NOTIFY__TIMEZONE`, `PIPELINE__LOG_LEVEL`.
 
 ---
 
@@ -66,49 +79,51 @@ X (Twitter) is deferred. New sources can be added by implementing the fetcher in
 **GitHub Actions** runs the full pipeline on a daily schedule (`cron`).
 
 ```
-.github/workflows/daily-digest.yml
-  - schedule: daily (e.g., 7 AM UTC)
-  - steps:
-      1. Checkout repo + restore state cache
-      2. Install dependencies
-      3. Run fetchers
-      4. Run LLM ranking
-      5. Generate HTML archive → commit/push to gh-pages
-      6. Send email
-      7. Save updated state cache
+.github/workflows/daily_ingest.yml
+  - schedule: "0 12 * * *"  (12:00 UTC = 7 AM EST / 8 AM EDT)
+  - jobs:
+      test   — always: checkout → uv sync → pytest
+      ingest — schedule/dispatch only, needs: test
+               checkout → uv sync → python -m dailydrop.pipeline
 ```
 
-Secrets (Gemini API key, Gmail credentials) are stored as GitHub Actions secrets.
+Secrets required: `SENDER_EMAIL`, `SMTP_PASSWORD`, `RECEIVER_EMAIL`.
 
 ---
 
-## Repository Layout (proposed)
+## Repository Layout
 
 ```
-name-tbd/
+daily-drop/
+├── .github/
+│   └── workflows/
+│       └── daily_ingest.yml
+├── dailydrop/
+│   ├── config.py          # pydantic-settings, SMTP provider registry
+│   ├── fetch.py           # RSS/Atom fetching and time-window filter
+│   ├── models.py          # Item dataclass
+│   ├── normalize.py       # HTML cleaning, timezone conversion
+│   ├── notify.py          # email rendering and SMTP delivery
+│   ├── pipeline.py        # CLI entry point, orchestration
+│   └── templates/
+│       ├── drop.subject.jinja2
+│       ├── drop.html.jinja2
+│       └── drop.txt.jinja2
+├── tests/
 ├── docs/
 │   └── architecture.md
-├── src/
-│   ├── fetchers/          # one module per source type (youtube.py, rss.py, ...)
-│   ├── llm/               # LLM abstraction + Gemini implementation
-│   ├── digest/            # email renderer + HTML archive generator
-│   └── main.py            # pipeline entry point
-├── config/
-│   ├── sources.yaml       # list of feeds/channels to watch
-│   └── interests.txt      # user interest prompt for LLM
-├── state/
-│   └── seen.json          # persisted deduplication state
-└── .github/
-    └── workflows/
-        └── daily-digest.yml
+├── sources.yaml           # list of RSS/Atom URLs to watch
+├── pyproject.toml
+└── uv.lock
 ```
 
 ---
 
 ## Key Design Decisions
 
-- **RSS-first**: Avoids fragile scraping where possible; most sources expose RSS.
-- **Stateless pipeline**: Each run is self-contained; state is minimal (seen IDs only).
-- **Config-driven sources**: Adding a new feed requires only editing `sources.yaml`, no code change.
-- **Pluggable LLM**: Provider is injected at runtime via an env var / config flag so Gemini can be swapped for Claude, OpenAI, or a local model without touching pipeline logic.
-- **GitHub Pages for archive**: Zero infrastructure — the HTML is just a committed artifact.
+- **RSS-first**: avoids fragile scraping; feedparser handles both RSS and Atom uniformly.
+- **Time-window instead of state file**: each run is fully self-contained; no persistent deduplication cache needed given a 24 h schedule.
+- **Config-driven sources**: adding a feed requires only editing `sources.yaml`.
+- **SMTP auto-detection**: provider inferred from sender domain so users don't need to look up server settings.
+- **Fail-soft fetching**: individual feed errors are logged and skipped rather than aborting the pipeline.
+- **No LLM ranking (yet)**: all items within the time window are included in the digest. LLM-based enrichment and ranking is a planned future addition.
