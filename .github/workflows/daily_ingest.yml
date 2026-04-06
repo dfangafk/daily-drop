@@ -46,6 +46,6 @@ jobs:
       - name: Run pipeline
         run: uv run python -m dailydrop.pipeline
         env:
-          SENDER_GMAIL: ${{ secrets.SENDER_GMAIL }}
-          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           RECEIVER_EMAIL: ${{ secrets.RECEIVER_EMAIL }}
