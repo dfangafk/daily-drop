@@ -79,7 +79,7 @@ Sources are listed in `sources.yaml` with `name` and `url` fields. Adding a new 
 **GitHub Actions** runs the full pipeline on a daily schedule (`cron`).
 
 ```
-.github/workflows/daily_ingest.yml
+.github/workflows/daily_drop.yml
   - schedule: "0 12 * * *"  (12:00 UTC = 7 AM EST / 8 AM EDT)
   - jobs:
       test   — always: checkout → uv sync → pytest
@@ -97,7 +97,7 @@ Secrets required: `SENDER_EMAIL`, `SMTP_PASSWORD`, `RECEIVER_EMAIL`.
 daily-drop/
 ├── .github/
 │   └── workflows/
-│       └── daily_ingest.yml
+│       └── daily_drop.yml
 ├── dailydrop/
 │   ├── config.py          # pydantic-settings, SMTP provider registry
 │   ├── fetch.py           # RSS/Atom fetching and time-window filter

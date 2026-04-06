@@ -81,7 +81,7 @@ Flags:
 
 ## Automate with GitHub Actions
 
-The included workflow (`.github/workflows/daily_ingest.yml`) runs the pipeline daily at 12:00 UTC (7 AM ET).
+The included workflow (`.github/workflows/daily_drop.yml`) runs the pipeline daily at 12:00 UTC (7 AM ET).
 
 Add these three secrets to your repository under **Settings → Secrets and variables → Actions**:
 
