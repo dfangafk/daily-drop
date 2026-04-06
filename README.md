@@ -4,8 +4,11 @@ A self-hosted pipeline that monitors RSS/Atom feeds and delivers a daily email d
 
 ## Quick start
 
+1. **Fork** this repository on GitHub (click **Fork** in the top-right corner).
+2. Clone your fork:
+
 ```bash
-git clone https://github.com/dfangafk/daily-drop.git
+git clone https://github.com/<your-username>/daily-drop.git
 cd daily-drop
 uv sync
 cp sources.example.yaml sources.yaml
@@ -85,6 +88,8 @@ Flags:
 ## Automate with GitHub Actions
 
 The included workflow (`.github/workflows/daily_drop.yml`) runs the pipeline daily at 12:00 UTC (7 AM ET).
+
+> **Note:** GitHub Actions run on your own fork. If you cloned without forking first, push the repo to your own GitHub account before proceeding.
 
 You need to configure the following in your repository:
 
