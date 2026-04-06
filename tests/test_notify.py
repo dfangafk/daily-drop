@@ -2,18 +2,21 @@
 
 import datetime
 
+import pytest
+
 import dailydrop.notify as notify_module
 from dailydrop.notify import send_notification
 
 
-def test_send_notification_skips_when_no_credentials(mocker, sample_items):
+def test_send_notification_raises_when_no_credentials(mocker, sample_items):
     mocker.patch.object(notify_module.settings, "sender_email", "")
     mocker.patch.object(notify_module.settings, "smtp_password", "")
     mocker.patch.object(notify_module.settings, "receiver_email", "")
     mock_smtp = mocker.patch("dailydrop.notify.smtplib.SMTP_SSL")
 
     t0 = datetime.datetime(2026, 4, 1, 12, 0, tzinfo=datetime.UTC)
-    send_notification(t0, sample_items)
+    with pytest.raises(RuntimeError, match="SENDER_EMAIL"):
+        send_notification(t0, sample_items)
 
     mock_smtp.assert_not_called()
 
@@ -75,3 +78,24 @@ def test_send_notification_subject_contains_date_and_count(
     sent_msg = mock_smtp_instance.send_message.call_args[0][0]
     assert "2026-04-01" in sent_msg["Subject"]
     assert str(len(sample_items)) in sent_msg["Subject"]
+
+
+def test_send_notification_propagates_smtp_error(mocker, sample_items):
+    mocker.patch.object(
+        notify_module.settings, "sender_email", "test@gmail.com"
+    )
+    mocker.patch.object(notify_module.settings, "smtp_password", "app-pass")
+    mocker.patch.object(
+        notify_module.settings, "receiver_email", "recv@example.com"
+    )
+    mock_env = mocker.MagicMock()
+    mock_env.get_template.return_value.render.return_value = ""
+    mocker.patch("dailydrop.notify.Environment", return_value=mock_env)
+    mocker.patch(
+        "dailydrop.notify.smtplib.SMTP_SSL",
+        side_effect=ConnectionRefusedError("SMTP unreachable"),
+    )
+
+    t0 = datetime.datetime(2026, 4, 1, 12, 0, tzinfo=datetime.UTC)
+    with pytest.raises(ConnectionRefusedError, match="SMTP unreachable"):
+        send_notification(t0, sample_items)

@@ -22,8 +22,8 @@ def send_notification(
 ) -> None:
     """Send daily digest email after pipeline completion.
 
-    Skips silently if SENDER_GMAIL, GMAIL_APP_PASSWORD, or RECEIVER_EMAIL are
-    not set.  Catches and logs all exceptions to avoid failing the pipeline.
+    Raises RuntimeError if credentials are missing or delivery fails.
+    Use --skip-email on the pipeline to opt out of email delivery entirely.
 
     Args:
         reference_time: UTC timestamp of the pipeline run.
@@ -34,8 +34,10 @@ def send_notification(
         and settings.smtp_password
         and settings.receiver_email
     ):
-        logger.info("Email notification skipped (credentials not set)")
-        return
+        raise RuntimeError(
+            "Email notification failed: SENDER_EMAIL, SMTP_PASSWORD, and "
+            "RECEIVER_EMAIL must all be set. Use --skip-email to opt out."
+        )
 
     tz = ZoneInfo(settings.notify.timezone)
     dt_local = reference_time.astimezone(tz)
@@ -67,21 +69,18 @@ def send_notification(
     msg.attach(MIMEText(text_body, "plain"))
     msg.attach(MIMEText(html_body, "html"))
 
-    try:
-        smtp_host, smtp_port, smtp_security = resolve_smtp(
-            settings.notify, settings.sender_email
-        )
-        context = ssl.create_default_context()
-        if smtp_security == "ssl":
-            conn = smtplib.SMTP_SSL(smtp_host, smtp_port, context=context)
-        else:
-            conn = smtplib.SMTP(smtp_host, smtp_port)
-            conn.starttls(context=context)
-        with conn as server:
-            server.login(settings.sender_email, settings.smtp_password)
-            server.send_message(msg)
-        _email = settings.receiver_email
-        _masked = _email[:2] + "***" + _email[_email.index("@") :]
-        logger.info("Notification email sent to %s", _masked)
-    except Exception:
-        logger.warning("Failed to send notification email", exc_info=True)
+    smtp_host, smtp_port, smtp_security = resolve_smtp(
+        settings.notify, settings.sender_email
+    )
+    context = ssl.create_default_context()
+    if smtp_security == "ssl":
+        conn = smtplib.SMTP_SSL(smtp_host, smtp_port, context=context)
+    else:
+        conn = smtplib.SMTP(smtp_host, smtp_port)
+        conn.starttls(context=context)
+    with conn as server:
+        server.login(settings.sender_email, settings.smtp_password)
+        server.send_message(msg)
+    _email = settings.receiver_email
+    _masked = _email[:2] + "***" + _email[_email.index("@") :]
+    logger.info("Notification email sent to %s", _masked)
