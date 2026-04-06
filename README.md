@@ -90,3 +90,10 @@ Add these three secrets to your repository under **Settings → Secrets and vari
 - `RECEIVER_EMAIL`
 
 The workflow runs tests first and only sends the email if they pass. You can also trigger it manually from the Actions tab.
+
+## Known limitations
+
+- **Email providers:** Only Gmail has been tested. Other providers' SMTP setup (Outlook, Yahoo, iCloud, Fastmail) may require additional configuration or may not work as expected.
+- **Large digests:** There is no pagination or truncation — if a lookback window captures a large number of items, the email may be too long to render or deliver reliably. A fallback delivery method (e.g. a hosted page or attachment) has not been implemented yet.
+- **Stateless deduplication:** The pipeline uses a lookback window rather than a persistent seen-items store. If a run fails or is skipped, items from that window are silently dropped and will not be surfaced in a later run. A persistent store tracking seen item IDs is a likely future improvement.
+- **RSS-only ingestion:** Sources must expose an RSS or Atom feed. Pages without a feed (e.g. social media profiles, paywalled sites) cannot be monitored yet. Future work may explore scraping or other retrieval approaches.
