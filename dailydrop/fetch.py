@@ -54,7 +54,11 @@ def _fetch_feed(url: str) -> list[Item]:
                 published_at=datetime.datetime(
                     *ts[:6], tzinfo=datetime.UTC
                 )
-                if (ts := entry.get("published_parsed"))
+                if (
+                    ts := entry.get("published_parsed")
+                    or entry.get("updated_parsed")
+                    or entry.get("created_parsed")
+                )
                 else None,
                 description=entry.get("summary", ""),
                 source_name=source_name,

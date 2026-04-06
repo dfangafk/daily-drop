@@ -133,6 +133,30 @@ def test_fetch_all_sources_combines_feeds(mocker, sample_items):
     assert len(items) == 3
 
 
+def test_fetch_feed_falls_back_to_updated_parsed_when_no_published(mocker):
+    """Atom entries with only <updated> must not be silently dropped."""
+    import time
+
+    ts = time.strptime("2026-01-15 12:00:00", "%Y-%m-%d %H:%M:%S")
+    mock_feed = _make_mock_feed(
+        {
+            "id": "https://example.com/atom-updated-only",
+            "link": "https://example.com/atom-updated-only",
+            "title": "Atom Updated Only",
+            "summary": "",
+            "updated_parsed": ts,
+        }
+    )
+    mocker.patch("dailydrop.fetch.feedparser.parse", return_value=mock_feed)
+
+    items = _fetch_feed("https://example.com/feed.xml")
+
+    assert items[0].published_at is not None
+    assert items[0].published_at.year == 2026
+    assert items[0].published_at.month == 1
+    assert items[0].published_at.day == 15
+
+
 def test_fetch_all_sources_sorted_newest_first(mocker, sample_items):
     # sample_items are already sorted oldest→newest;
     # fetch_all_sources should reverse
