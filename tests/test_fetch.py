@@ -1,5 +1,6 @@
 """Tests for dailydrop.fetch — source loading, feed fetching, entry parsing."""
 
+import logging
 from unittest.mock import MagicMock
 
 import pytest
@@ -61,6 +62,26 @@ def test_fetch_feed_returns_empty_on_error(mocker):
     )
     items = _fetch_feed("https://bad.example.com/")
     assert items == []
+
+
+def test_fetch_feed_logs_redacted_source_on_error(mocker, caplog):
+    sensitive_url = (
+        "https://user:secret@example.com/private/feed.xml?token=abc123"
+    )
+    mocker.patch(
+        "dailydrop.fetch.feedparser.parse",
+        side_effect=Exception("network error"),
+    )
+
+    with caplog.at_level(logging.WARNING):
+        items = _fetch_feed(sensitive_url)
+
+    assert items == []
+    assert "example.com#" in caplog.text
+    assert sensitive_url not in caplog.text
+    assert "secret" not in caplog.text
+    assert "token=abc123" not in caplog.text
+    assert "network error" not in caplog.text
 
 
 def _make_mock_feed(entry_data: dict) -> MagicMock:

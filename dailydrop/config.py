@@ -120,7 +120,7 @@ def resolve_smtp(
             return SMTP_PROVIDERS[provider]
 
     raise ValueError(
-        f"Cannot determine SMTP settings for {sender_email!r}. "
+        "Cannot determine SMTP settings from the sender email domain. "
         "Set NOTIFY__SMTP_HOST and NOTIFY__SMTP_PORT, "
         "or use a recognised email domain."
     )

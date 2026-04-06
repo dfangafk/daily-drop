@@ -104,6 +104,14 @@ def test_resolve_smtp_unknown_domain_raises():
         resolve_smtp(notify, "user@unknown-domain.example")
 
 
+def test_resolve_smtp_unknown_domain_error_does_not_echo_sender_email():
+    notify = NotifySettings()
+    with pytest.raises(ValueError) as exc_info:
+        resolve_smtp(notify, "private.user@unknown-domain.example")
+
+    assert "private.user@unknown-domain.example" not in str(exc_info.value)
+
+
 def test_resolve_smtp_no_email_raises():
     notify = NotifySettings()
     with pytest.raises(ValueError, match="Cannot determine SMTP settings"):
