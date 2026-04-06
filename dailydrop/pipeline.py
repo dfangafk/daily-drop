@@ -112,6 +112,7 @@ def main() -> None:
                 "Sending email notification for %d items", len(recent_items)
             )
             send_notification(reference_time, recent_items)
+            logger.info("Notification email sent successfully")
 
         elapsed = (
             datetime.datetime.now(datetime.UTC) - pipeline_start

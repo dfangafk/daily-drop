@@ -1,7 +1,6 @@
 """Email notification: send daily digest after pipeline completes."""
 
 import datetime
-import logging
 import smtplib
 import ssl
 from email.mime.multipart import MIMEMultipart
@@ -12,9 +11,6 @@ from jinja2 import Environment, FileSystemLoader
 
 from dailydrop.config import resolve_smtp, settings
 from dailydrop.models import Item
-
-logger = logging.getLogger(__name__)
-
 
 def send_notification(
     reference_time: datetime.datetime,
@@ -81,6 +77,3 @@ def send_notification(
     with conn as server:
         server.login(settings.sender_email, settings.smtp_password)
         server.send_message(msg)
-    _email = settings.receiver_email
-    _masked = _email[:2] + "***" + _email[_email.index("@") :]
-    logger.info("Notification email sent to %s", _masked)
