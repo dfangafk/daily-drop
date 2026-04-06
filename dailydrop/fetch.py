@@ -1,10 +1,8 @@
 """Fetch new items from all configured RSS sources."""
 
 import datetime
-import hashlib
 import logging
 from pathlib import Path
-from urllib.parse import urlsplit
 
 import feedparser
 import yaml
@@ -13,13 +11,6 @@ from dailydrop.config import settings
 from dailydrop.models import Item
 
 logger = logging.getLogger(__name__)
-
-
-def _feed_log_ref(url: str) -> str:
-    """Return a stable, redacted identifier for a source URL."""
-    host = urlsplit(url).hostname or "<unknown-host>"
-    digest = hashlib.sha256(url.encode("utf-8")).hexdigest()[:8]
-    return f"{host}#{digest}"
 
 
 def _load_sources(path: Path | None = None) -> list[dict]:
@@ -77,11 +68,7 @@ def _fetch_feed(url: str) -> list[Item]:
         ]
         return items
     except Exception as exc:
-        logger.warning(
-            "Failed to fetch feed %s (%s)",
-            _feed_log_ref(url),
-            type(exc).__name__,
-        )
+        logger.warning("Failed to fetch feed %r: %s", url, exc)
         return []
 
 

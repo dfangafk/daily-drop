@@ -46,20 +46,24 @@ def _parse_args() -> argparse.Namespace:
 
 
 def _log_recent_items(items: list) -> None:
-    """Emit per-item debug logs without dumping raw content or URLs."""
-    total = len(items)
-    for idx, item in enumerate(items, start=1):
+    for item in items:
         logger.debug(
-            "Recent item %d/%d ready for notification "
-            "(published_at=%s, title_chars=%d, description_chars=%d, "
-            "has_url=%s, has_source_url=%s)",
-            idx,
-            total,
+            "\n  id:           %s"
+            "\n  title:        %s"
+            "\n  description:  %s"
+            "\n  url:          %s"
+            "\n  published_at: %s"
+            "\n  source_name:  %s"
+            "\n  source_url:   %s",
+            item.id,
+            item.title,
+            item.description[:120] + "…"
+            if len(item.description) > 120
+            else item.description,
+            item.url,
             item.published_at,
-            len(item.title),
-            len(item.description),
-            bool(item.url),
-            bool(item.source_url),
+            item.source_name,
+            item.source_url,
         )
 
 
