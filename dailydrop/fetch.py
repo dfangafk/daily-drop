@@ -111,16 +111,16 @@ def fetch_all_sources(urls: list[str] | None = None) -> list[Item]:
 
 def filter_recent_items(
     items: list[Item],
-    hours: int = 24,
+    lookback_hours: int = 24,
     reference_time: datetime.datetime | None = None,
 ) -> list[Item]:
-    """Return only items published within the last ``hours`` hours.
+    """Return only items published within the last ``lookback_hours`` hours.
 
     Items with no ``published_at`` are excluded.
 
     Args:
         items: List of ``Item`` objects to filter.
-        hours: Lookback window in hours.  Defaults to 24.
+        lookback_hours: Lookback window in hours.  Defaults to 24.
         reference_time: Reference time for the cutoff.
             Defaults to the current UTC time.
 
@@ -129,7 +129,7 @@ def filter_recent_items(
     """
     if reference_time is None:
         reference_time = datetime.datetime.now(tz=datetime.UTC)
-    cutoff = reference_time - datetime.timedelta(hours=hours)
+    cutoff = reference_time - datetime.timedelta(hours=lookback_hours)
     recent_items = [
         item
         for item in items

@@ -22,7 +22,7 @@ def _parse_args() -> argparse.Namespace:
         description="Run the Daily Drop pipeline."
     )
     parser.add_argument(
-        "--hours",
+        "--lookback-hours",
         type=int,
         default=24,
         help="Look-back window in hours (default: 24).",
@@ -63,7 +63,7 @@ def main() -> None:
         " look-back: %d hours",
         run_date,
         reference_time.isoformat(),
-        args.hours,
+        args.lookback_hours,
     )
 
     try:
@@ -73,12 +73,14 @@ def main() -> None:
         )
 
         recent_items = filter_recent_items(
-            all_items, hours=args.hours, reference_time=reference_time
+            all_items,
+            lookback_hours=args.lookback_hours,
+            reference_time=reference_time,
         )
         logger.info(
             "Filtered to %d items within the last %d hours (%d excluded)",
             len(recent_items),
-            args.hours,
+            args.lookback_hours,
             len(all_items) - len(recent_items),
         )
         normalize_items(recent_items)

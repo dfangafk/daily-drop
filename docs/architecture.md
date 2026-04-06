@@ -37,7 +37,7 @@ Sources are listed in `sources.yaml` with `name` and `url` fields. Adding a new 
 
 ### 2. Fetcher (`dailydrop/fetch.py`)
 - `fetch_all_sources(urls)` — fetches all configured feeds in sequence, returns items sorted newest-first.
-- `filter_recent_items(items, hours, reference_time)` — drops items outside the lookback window.
+- `filter_recent_items(items, lookback_hours, reference_time)` — drops items outside the lookback window.
 - Uses `feedparser` to handle both RSS and Atom formats.
 - Normalizes each entry into an `Item`:
   `{ id, title, url, published_at, description, source_name, source_url }`

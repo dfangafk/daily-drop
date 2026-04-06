@@ -75,7 +75,7 @@ Flags:
 
 | Flag | Default | Description |
 |---|---|---|
-| `--hours N` | `24` | Look-back window in hours |
+| `--lookback-hours N` | `24` | Look-back window in hours |
 | `--reference-time DATETIME` | now | Treat this time as "now" (ISO 8601) |
 | `--skip-email` | — | Run the pipeline without sending email |
 
