@@ -54,7 +54,7 @@ Gmail requires an app password instead of your regular password.
 3. Click **Create app password**, give it a name (e.g. "daily-drop"), and click **Create**.
 4. Copy the 16-character password and paste it as `SMTP_PASSWORD` in your `.env`.
 
-For other providers, search for "app password" in their account security settings — the process is similar.
+For other providers, check your provider's documentation on how to generate an app password or allow SMTP access.
 
 ### Optional settings
 
