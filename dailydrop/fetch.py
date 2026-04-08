@@ -2,6 +2,7 @@
 
 import datetime
 import logging
+import time
 from pathlib import Path
 
 import feedparser
@@ -11,6 +12,9 @@ from dailydrop.config import settings
 from dailydrop.models import Item
 
 logger = logging.getLogger(__name__)
+
+_FETCH_RETRIES = 3
+_FETCH_RETRY_BASE_DELAY = 2  # seconds; doubles each attempt (2, 4)
 
 
 def _load_sources(path: Path | None = None) -> list[dict]:
@@ -33,6 +37,7 @@ def _fetch_feed(url: str) -> list[Item]:
     """Fetch a single RSS/Atom feed and return a list of Items.
 
     Never raises — on parse failure, logs a warning and returns an empty list.
+    Retries up to ``_FETCH_RETRIES`` times on transient errors.
 
     Args:
         url: URL of the RSS/Atom feed.
@@ -40,36 +45,57 @@ def _fetch_feed(url: str) -> list[Item]:
     Returns:
         List of ``Item`` objects parsed from the feed.
     """
-    try:
-        feed = feedparser.parse(url)
-        if feed.bozo and not feed.entries:
-            raise feed.bozo_exception
-        source_name = feed.feed.get("title", "")
-        source_url = feed.feed.get("link", "")
-        items = [
-            Item(
-                id=entry.get("id") or entry.get("link", ""),
-                title=entry.get("title", ""),
-                url=entry.get("link", ""),
-                published_at=datetime.datetime(
-                    *ts[:6], tzinfo=datetime.UTC
+    last_exc: Exception | None = None
+    for attempt in range(1, _FETCH_RETRIES + 1):
+        try:
+            feed = feedparser.parse(url)
+            if feed.bozo and not feed.entries:
+                raise feed.bozo_exception
+            source_name = feed.feed.get("title", "")
+            source_url = feed.feed.get("link", "")
+            items = [
+                Item(
+                    id=entry.get("id") or entry.get("link", ""),
+                    title=entry.get("title", ""),
+                    url=entry.get("link", ""),
+                    published_at=datetime.datetime(
+                        *ts[:6], tzinfo=datetime.UTC
+                    )
+                    if (
+                        ts := entry.get("published_parsed")
+                        or entry.get("updated_parsed")
+                        or entry.get("created_parsed")
+                    )
+                    else None,
+                    description=entry.get("summary", ""),
+                    source_name=source_name,
+                    source_url=source_url,
                 )
-                if (
-                    ts := entry.get("published_parsed")
-                    or entry.get("updated_parsed")
-                    or entry.get("created_parsed")
+                for entry in feed.entries
+            ]
+            if attempt > 1:
+                logger.info("Feed %r succeeded on attempt %d", url, attempt)
+            return items
+        except Exception as exc:
+            last_exc = exc
+            if attempt < _FETCH_RETRIES:
+                delay = _FETCH_RETRY_BASE_DELAY * (2 ** (attempt - 1))
+                logger.debug(
+                    "Feed %r attempt %d/%d failed (%s), retrying in %ds…",
+                    url,
+                    attempt,
+                    _FETCH_RETRIES,
+                    exc,
+                    delay,
                 )
-                else None,
-                description=entry.get("summary", ""),
-                source_name=source_name,
-                source_url=source_url,
-            )
-            for entry in feed.entries
-        ]
-        return items
-    except Exception as exc:
-        logger.warning("Failed to fetch feed %r: %s", url, exc)
-        return []
+                time.sleep(delay)
+    logger.warning(
+        "Failed to fetch feed %r after %d attempts: %s",
+        url,
+        _FETCH_RETRIES,
+        last_exc,
+    )
+    return []
 
 
 def _fetch_page(url: str) -> list[Item]:
