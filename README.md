@@ -33,8 +33,6 @@ sources:
   - name: "Y Combinator"
     url: "https://www.youtube.com/feeds/videos.xml?channel_id=UCcefcZRL2oaA_uBNeo5UOWg"
 
-  - name: "Hacker News"
-    url: "https://news.ycombinator.com/rss"
 ```
 
 Each entry needs a `name` and a feed `url`. Both RSS and Atom formats work.
