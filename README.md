@@ -2,7 +2,7 @@
 
 A self-hosted pipeline that monitors RSS/Atom feeds and delivers a daily email digest. Configure your sources, set your credentials, and get a curated inbox drop every morning.
 
-<img src="docs/email-preview.png" width="376" alt="Daily Drop email preview">
+![Daily Drop email preview](docs/email-preview.png)
 
 ## Quick start
 
