@@ -2,6 +2,8 @@
 
 A self-hosted pipeline that monitors RSS/Atom feeds and delivers a daily email digest. Configure your sources, set your credentials, and get a curated inbox drop every morning.
 
+![Daily Drop email preview](docs/email-preview.png)
+
 ## Quick start
 
 1. **Fork** this repository on GitHub (click **Fork** in the top-right corner).
