@@ -68,7 +68,7 @@ For other providers, check your provider's documentation on how to generate an a
 |---|---|---|
 | `NOTIFY__TIMEZONE` | `America/New_York` | Timezone for email timestamps |
 | `PIPELINE__LOG_LEVEL` | `INFO` | Log verbosity (`DEBUG`, `INFO`, `WARNING`) |
-| `PIPELINE__EXCLUDE_YOUTUBE_SHORTS` | `true` | Drop YouTube Shorts from the digest |
+| `PIPELINE__EXCLUDE_YOUTUBE_SHORTS` | `false` | Drop YouTube Shorts from the digest |
 | `NOTIFY__SMTP_HOST` | auto | Override SMTP host |
 | `NOTIFY__SMTP_PORT` | auto | Override SMTP port |
 

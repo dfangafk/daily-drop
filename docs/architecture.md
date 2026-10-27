@@ -38,7 +38,7 @@ Sources are listed in `sources.yaml` with `name` and `url` fields. Adding a new 
 ### 2. Fetcher (`dailydrop/fetch.py`)
 - `fetch_all_sources(urls)` — fetches all configured feeds in sequence, returns items sorted newest-first.
 - `filter_recent_items(items, lookback_hours, reference_time)` — drops items outside the lookback window.
-- `filter_youtube_shorts(items)` — drops YouTube Shorts (`youtube.com/shorts/` links); applied when `PIPELINE__EXCLUDE_YOUTUBE_SHORTS` is true (default).
+- `filter_youtube_shorts(items)` — drops YouTube Shorts (`youtube.com/shorts/` links); applied when `PIPELINE__EXCLUDE_YOUTUBE_SHORTS` is true (default: false).
 - Uses `feedparser` to handle both RSS and Atom formats.
 - Normalizes each entry into an `Item`:
   `{ id, title, url, published_at, description, source_name, source_url }`
