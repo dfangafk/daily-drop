@@ -4,7 +4,12 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from dailydrop.fetch import _fetch_feed, _load_sources, fetch_all_sources
+from dailydrop.fetch import (
+    _fetch_feed,
+    _load_sources,
+    fetch_all_sources,
+    filter_youtube_shorts,
+)
 from dailydrop.models import Item
 
 _MINIMAL_SOURCES_YAML = """\
@@ -167,3 +172,28 @@ def test_fetch_all_sources_sorted_newest_first(mocker, sample_items):
 
     dates = [i.published_at for i in items if i.published_at]
     assert dates == sorted(dates, reverse=True)
+
+
+def test_filter_youtube_shorts_drops_shorts_only():
+    video = Item(
+        id="v",
+        title="Video",
+        url="https://www.youtube.com/watch?v=bxcnCOej764",
+        published_at=None,
+    )
+    short = Item(
+        id="s",
+        title="Short",
+        url="https://www.youtube.com/shorts/BI5sVUq5Z2Y",
+        published_at=None,
+    )
+    article = Item(
+        id="a",
+        title="Article",
+        url="https://example.com/post",
+        published_at=None,
+    )
+
+    result = filter_youtube_shorts([video, short, article])
+
+    assert result == [video, article]

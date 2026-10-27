@@ -62,6 +62,7 @@ class PipelineSettings(BaseModel):
     """Pipeline run configuration."""
 
     log_level: str = "INFO"
+    exclude_youtube_shorts: bool = True
 
 
 class PathSettings(BaseModel):

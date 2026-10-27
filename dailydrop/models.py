@@ -40,7 +40,8 @@ class Item:
         Return the YouTube video ID if this item links to a YouTube video.
         """
         m = re.search(
-            r"(?:youtube\.com/watch\?(?:.*&)?v=|youtu\.be/)([A-Za-z0-9_-]{11})",
+            r"(?:youtube\.com/watch\?(?:.*&)?v=|youtube\.com/shorts/|youtu\.be/)"
+            r"([A-Za-z0-9_-]{11})",
             self.url,
         )
         return m.group(1) if m else None

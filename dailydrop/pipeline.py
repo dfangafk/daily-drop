@@ -5,7 +5,11 @@ import datetime
 import logging
 
 from dailydrop.config import settings
-from dailydrop.fetch import fetch_all_sources, filter_recent_items
+from dailydrop.fetch import (
+    fetch_all_sources,
+    filter_recent_items,
+    filter_youtube_shorts,
+)
 from dailydrop.normalize import normalize_items
 from dailydrop.notify import send_notification
 
@@ -93,6 +97,13 @@ def main() -> None:
         logger.info(
             "Fetched %d total items across all sources", len(all_items)
         )
+
+        if settings.pipeline.exclude_youtube_shorts:
+            fetched_count = len(all_items)
+            all_items = filter_youtube_shorts(all_items)
+            logger.info(
+                "Excluded %d YouTube Shorts", fetched_count - len(all_items)
+            )
 
         recent_items = filter_recent_items(
             all_items,

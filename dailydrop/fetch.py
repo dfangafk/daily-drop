@@ -2,6 +2,7 @@
 
 import datetime
 import logging
+import re
 import time
 from pathlib import Path
 
@@ -15,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 _FETCH_RETRIES = 3
 _FETCH_RETRY_BASE_DELAY = 2  # seconds; doubles each attempt (2, 4)
+_YOUTUBE_SHORTS_RE = re.compile(r"youtube\.com/shorts/")
 
 
 def _load_sources(path: Path | None = None) -> list[dict]:
@@ -166,3 +168,18 @@ def filter_recent_items(
         if item.published_at and cutoff <= item.published_at <= reference_time
     ]
     return recent_items
+
+
+def filter_youtube_shorts(items: list[Item]) -> list[Item]:
+    """Return items with YouTube Shorts removed.
+
+    YouTube channel feeds link Shorts as ``youtube.com/shorts/<id>`` and
+    regular videos as ``youtube.com/watch?v=<id>``.
+
+    Args:
+        items: List of ``Item`` objects to filter.
+
+    Returns:
+        Filtered list of ``Item`` objects.
+    """
+    return [item for item in items if not _YOUTUBE_SHORTS_RE.search(item.url)]

@@ -28,3 +28,23 @@ def test_item_none_published_at():
         published_at=None,
     )
     assert item.published_at is None
+
+
+def test_youtube_id_from_watch_url():
+    item = Item(
+        id="x",
+        title="Title",
+        url="https://www.youtube.com/watch?v=bxcnCOej764",
+        published_at=None,
+    )
+    assert item.youtube_id == "bxcnCOej764"
+
+
+def test_youtube_id_from_shorts_url():
+    item = Item(
+        id="x",
+        title="Title",
+        url="https://www.youtube.com/shorts/BI5sVUq5Z2Y",
+        published_at=None,
+    )
+    assert item.youtube_id == "BI5sVUq5Z2Y"
